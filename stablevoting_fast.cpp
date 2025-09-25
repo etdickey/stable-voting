@@ -78,7 +78,7 @@ struct GraphTemplate {
 
     // Add this margin overload inside GraphTemplate if you like:
     inline int margin(int u, int v, const vector<int>& W) const {
-        return margin(u, v, W.data());
+        return margin(u, v, W.data());//.data is constant time
     }
 };
 
@@ -268,28 +268,61 @@ struct SVFast {
     vector<uint32_t> memo_epoch;    // epoch tag
     uint32_t EPOCH = 1;
 
+    // Per-permutation realized margins and sorted adjacency
+    bool prepared = false;
+    std::vector<int> M;                  // size N*N, M[u*N+v] = margin(u->v)
+    std::vector<std::vector<int>> nbrs;  // nbrs[u] = v's sorted by M[u,v] desc
+    inline int MIDX(int u,int v) const { return u*N + v; }
+
     // Scratch
     vector<int> q;           // BFS queue (N)
     vector<uint8_t> vis;     // BFS visited (N)
 
-    SVFast(const GraphTemplate& T): G(T), N(T.N){
-        size_t S = 1u << N;  // N is small in these instances
+    SVFast(const GraphTemplate& T): G(T), N(T.N) {
+        size_t S = size_t{1} << N;  // N is small in these instances
         memo_winner.assign(S, -2);   // -2 = unknown
         memo_epoch.assign(S, 0);
         q.resize(N);
         vis.resize(N);
     }
 
-    inline void reset_epoch(){
+    void prepare_for_weights(const int* W) {
+        if ((int)M.size() != N*N) M.assign(N*N, 0);
+        if ((int)nbrs.size() != N) nbrs.assign(N, {});
+        // Fill realized margins for the tournament (both directions).
+        for (int u=0; u<N; ++u) {
+            for (int v=0; v<N; ++v) if (u!=v) {
+                int iuv = G.IDX(u,v);
+                if (G.dir[iuv]) {
+                    int m = W[(int)G.group[iuv]] + (int)G.off[iuv];
+                    M[MIDX(u,v)] = m;
+                    M[MIDX(v,u)] = -m;
+                }
+            }
+        }
+        // Build adjacency lists sorted by realized margin
+        for (int u=0; u<N; ++u) {
+            auto& L = nbrs[u];
+            L.clear(); L.reserve(N-1);
+            for (int v=0; v<N; ++v) if (u!=v) L.push_back(v);
+            std::sort(L.begin(), L.end(),
+                      [&](int a,int b){ return M[MIDX(u,a)] > M[MIDX(u,b)]; });
+        }
+        prepared = true;
+    }
+
+
+    inline void reset_epoch(const int* W){
         if (++EPOCH == 0){
             // rare wrap: hard reset
-            std::fill(memo_epoch.begin(), memo_epoch.end(), 0);
+            fill(memo_epoch.begin(), memo_epoch.end(), 0);
             EPOCH = 1;
         }
+        prepare_for_weights(W);
     }
 
     inline int margin(int u,int v, const int *W) const { return G.margin(u,v,W); }
-
+    inline int margin_fast(int u,int v) const { return M[MIDX(u,v)]; }// assume prepared==true
     inline bool in_mask(uint64_t mask, int i) const { return (mask >> i) & 1ull; }
 
     // In SVFast:
@@ -307,7 +340,7 @@ struct SVFast {
     }
 
 
-    bool exists_chain(int src, int dst, int threshold, uint64_t mask, const int *W){
+    bool exists_chain(int src, int dst, int threshold, uint64_t mask){//, const int *W){
         if (src==dst) return true;
         // Reset vis
         fill(vis.begin(), vis.end(), uint8_t{0});
@@ -315,23 +348,32 @@ struct SVFast {
         vis[src]=1; q[tail++]=src;
         while (head<tail){
             int u=q[head++];
-            // iterate all v in mask, v!=u
-            uint64_t m = mask & ~(1ull<<u);
-            while (m){
-                uint64_t b = lsb64(m); m ^= b; int v = ctz64(b);
+            const auto& L = nbrs[u];             // already sorted by M[u,v] desc
+            for (int v : L) {
+                int m = margin_fast(u, v);//M[MIDX(u,v)];
+                if (m < threshold) break;        // early cutoff, neighbors now too weak
+                if (!((mask >> v) & 1ull)) continue; // v not in subtournament
                 if (vis[v]) continue;
-                if (margin(u,v,W) >= threshold){
-                    if (v==dst) return true;
-                    vis[v]=1; q[tail++]=v;
-                }
+                if (v == dst) return true;
+                vis[v] = 1; q[tail++] = v;
             }
+            // // iterate all v in mask, v!=u
+            // uint64_t m = mask & ~(1ull<<u);
+            // while (m){
+            //     uint64_t b = lsb64(m); m ^= b; int v = ctz64(b);
+            //     if (vis[v]) continue;
+            //     if (margin_fast(u,v,W) >= threshold){
+            //         if (v==dst) return true;
+            //         vis[v]=1; q[tail++]=v;
+            //     }
+            // }
         }
         return false;
     }
 
-    inline bool b_defeats_a(int B, int A, uint64_t mask, const int *W){
-        int t = margin(B,A,W);
-        return !exists_chain(A,B,t,mask,W);
+    inline bool b_defeats_a(int B, int A, uint64_t mask){//}, const int *W){
+        int t = margin_fast(B,A);//,W);
+        return !exists_chain(A,B,t,mask);//,W);
     }
 
     struct Match { int A,B,m; };
@@ -360,8 +402,9 @@ struct SVFast {
             uint64_t mb = mask ^ (1ull<<A);//flip the A bit (^ IS XOR)
             while (mb){ // iterate over all b != a (uses mask above, not ma)
                 int B = ctz64(lsb64(mb)); mb ^= lsb64(mb);//remove B
-                int m = margin(A,B,W);
-                if (m>=0 || (m<0 && !b_defeats_a(B,A,mask,W))) matches.push_back({A,B,m});
+                int m = margin_fast(A,B);//,W);
+                if (m>=0 || (m<0 && !b_defeats_a(B,A,mask))) matches.push_back({A,B,m});
+                // if (m>=0 || (m<0 && !b_defeats_a(B,A,mask,W))) matches.push_back({A,B,m});
                 counter++;
             }
         }
@@ -398,9 +441,10 @@ struct SVFast {
             if (WN != A){ continue; }
             uint64_t mb = mask ^ (1ull<<A);
             while (mb){ int B=ctz64(lsb64(mb)); mb^=lsb64(mb);
-                int m=margin(A,B,W);
+                int m=margin_fast(A,B);//,W);
                 // todo: validate with chatgpt to be sure bit stuff works
-                if (m>=0 || (m<0 && !b_defeats_a(B,A,mask,W))) matches.push_back({A,B,m});
+                if (m>=0 || (m<0 && !b_defeats_a(B,A,mask))) matches.push_back({A,B,m});
+                // if (m>=0 || (m<0 && !b_defeats_a(B,A,mask,W))) matches.push_back({A,B,m});
                 // if((m<0) && !(m<0 && !b_defeats_a(B,A,mask,W))) {
                 //     cerr << "ERROR: winner: " << G.names[A] << " does not defeat: " << G.names[B] << endl;
                 // }
@@ -683,9 +727,9 @@ int main(){
     vector<int> W = Wbase; sort(W.begin(), W.end()); // ensure lexicographic start for next_permutation
 
     // init solver with all 4 2-sat 2-variable clauses
-    SVFast solver_all(T_all);
-    solver_all.reset_epoch();
     int W_all_base[NUM_GROUPS]; for (int i=0;i<NUM_GROUPS;++i) W_all_base[i]=Wbase[i];
+    SVFast solver_all(T_all);
+    solver_all.reset_epoch(W_all_base);
     int base_winner = solver_all.solve_winner((T_all.N==64?~0ull:((1ull<<T_all.N)-1ull)), W_all_base);
     vector<int> base_elim;
     solver_all.reconstruct((T_all.N==64?~0ull:((1ull<<T_all.N)-1ull)), base_winner, W_all_base, base_elim);
@@ -732,7 +776,7 @@ int main(){
         // SAT: C must win
         for (size_t si=0; si<T_sat.size(); ++si){
             auto &T = T_sat[si]; auto &S = sol_sat[si];
-            S.reset_epoch();
+            S.reset_epoch(Wperm);
             uint64_t full = (T.N==64?~0ull:((1ull<<T.N)-1ull));
             int w = S.solve_winner(full, Wperm);
             if (w<0 || T.names[w] != "C") { ++all_failures; success = false; }
@@ -748,7 +792,7 @@ int main(){
         // UNSAT: C must NOT win
         for (size_t ui=0; ui<T_unsat.size(); ++ui){
             auto &T = T_unsat[ui]; auto &S = sol_uns[ui];
-            S.reset_epoch();
+            S.reset_epoch(Wperm);
             uint64_t full = (T.N==64?~0ull:((1ull<<T.N)-1ull));
             int w = S.solve_winner(full, Wperm);
             if (w>=0 && T.names[w] == "C") { ++all_failures; success = false; }
@@ -772,7 +816,7 @@ int main(){
             for (size_t si = 0; si < T_sat.size(); ++si) {
                 const auto& T = T_sat[si];
                 auto& S = sol_sat[si];
-                S.reset_epoch();
+                S.reset_epoch(Wperm);
 
                 // Full bitmask of active nodes for this template
                 uint64_t full = (T.N == 64 ? ~0ull : ((1ull << T.N) - 1ull));
@@ -795,7 +839,7 @@ int main(){
             for (size_t ui = 0; ui < T_unsat.size(); ++ui) {
                 const auto& T = T_unsat[ui];
                 auto& S = sol_uns[ui];
-                S.reset_epoch();
+                S.reset_epoch(Wperm);
 
                 uint64_t full = (T.N == 64 ? ~0ull : ((1ull << T.N) - 1ull));
                 int w = S.solve_winner(full, Wperm);
