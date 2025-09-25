@@ -804,7 +804,7 @@ for perm in itertools.permutations(weights_perm):#winner should be C
         # print(f"[PROGRESS] perms_done={num_done}  avg_time={avg:.4f}s  fails_so_far={len(all_failures)} diffs_so_far={len(all_diffs)}")
         print(f"[PROGRESS] perms_done={num_done}  diffs_so_far={len(all_diffs)}  "\
               f"fails_so_far={num_all_failures}  perms_failed_so_far={num_perms_failed}  " \
-              f"(avg_time={avg:.4f}s, avg_per_perm={avg_per_perm:.4f}s avg_our_time={avg_our_time:.4f}s, avg_their_time={avg_their_time:.4f}s, "\
+              f"(avg_perm={avg:.4f}s, avg_case={avg_per_perm:.4f}s avg_our_time={avg_our_time:.4f}s, avg_their_time={avg_their_time:.4f}s, "\
               f"avg_graph_build_time={avg_graph_build_time:.4f}s, avg_post_overhead_time={avg_post_overhead_time:.4f}s)")
         last_report_t = now
 
