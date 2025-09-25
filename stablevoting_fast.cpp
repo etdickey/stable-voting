@@ -350,7 +350,7 @@ struct SVFast {
             int u=q[head++];
             const auto& L = nbrs[u];             // already sorted by M[u,v] desc
             for (int v : L) {
-                int m = margin_fast(u, v);//M[MIDX(u,v)];
+                int m = margin_fast(u, v);
                 if (m < threshold) break;        // early cutoff, neighbors now too weak
                 if (!((mask >> v) & 1ull)) continue; // v not in subtournament
                 if (vis[v]) continue;
@@ -371,18 +371,19 @@ struct SVFast {
         return false;
     }
 
-    inline bool b_defeats_a(int B, int A, uint64_t mask){//}, const int *W){
-        int t = margin_fast(B,A);//,W);
-        return !exists_chain(A,B,t,mask);//,W);
+    inline bool b_defeats_a(int B, int A, uint64_t mask){
+        int t = margin_fast(B,A);
+        return !exists_chain(A,B,t,mask);
     }
 
     struct Match { int A,B,m; };
 
-    int solve_winner(uint64_t mask, const int *W){
-        size_t key = (size_t)mask;
+    int solve_winner(uint64_t mask){
         // is the current graph permutation the one where memo_winner was set?
+        size_t key = (size_t)mask;
         if (memo_epoch[key]==EPOCH){ return memo_winner[key]; }
 
+        // single survivor?
         int live = popcount64(mask);//count number of candidates "active"
         if (live==1){
             int w = ctz64(mask);
@@ -402,9 +403,8 @@ struct SVFast {
             uint64_t mb = mask ^ (1ull<<A);//flip the A bit (^ IS XOR)
             while (mb){ // iterate over all b != a (uses mask above, not ma)
                 int B = ctz64(lsb64(mb)); mb ^= lsb64(mb);//remove B
-                int m = margin_fast(A,B);//,W);
+                int m = margin_fast(A,B);
                 if (m>=0 || (m<0 && !b_defeats_a(B,A,mask))) matches.push_back({A,B,m});
-                // if (m>=0 || (m<0 && !b_defeats_a(B,A,mask,W))) matches.push_back({A,B,m});
                 counter++;
             }
         }
@@ -419,7 +419,7 @@ struct SVFast {
             // (Clear bit B; &~ is clearer than XOR here because B may already be off in other contexts.)
             uint64_t nmask = mask & ~(1ull<<e.B);
             // Recursively solve on the reduced candidate set using the same weights W.
-            int w = solve_winner(nmask, W);
+            int w = solve_winner(nmask);
             // If the recursive winner equals A, then (A -> B) is a valid decisive step for this state.
             // Cache the result under the current EPOCH (generation) and return immediately.
             if (w==e.A){
@@ -441,10 +441,9 @@ struct SVFast {
             if (WN != A){ continue; }
             uint64_t mb = mask ^ (1ull<<A);
             while (mb){ int B=ctz64(lsb64(mb)); mb^=lsb64(mb);
-                int m=margin_fast(A,B);//,W);
+                int m=margin_fast(A,B);
                 // todo: validate with chatgpt to be sure bit stuff works
                 if (m>=0 || (m<0 && !b_defeats_a(B,A,mask))) matches.push_back({A,B,m});
-                // if (m>=0 || (m<0 && !b_defeats_a(B,A,mask,W))) matches.push_back({A,B,m});
                 // if((m<0) && !(m<0 && !b_defeats_a(B,A,mask,W))) {
                 //     cerr << "ERROR: winner: " << G.names[A] << " does not defeat: " << G.names[B] << endl;
                 // }
@@ -454,7 +453,7 @@ struct SVFast {
         for (const auto& e: matches){
             // A will always be WN, see above
             uint64_t nmask = mask & ~(1ull<<e.B);
-            if (solve_winner(nmask, W)==e.A){
+            if (solve_winner(nmask)==e.A){
                 elim.push_back(e.B);
                 reconstruct_recurse(nmask, WN, W, elim);
                 return;
@@ -730,7 +729,7 @@ int main(){
     int W_all_base[NUM_GROUPS]; for (int i=0;i<NUM_GROUPS;++i) W_all_base[i]=Wbase[i];
     SVFast solver_all(T_all);
     solver_all.reset_epoch(W_all_base);
-    int base_winner = solver_all.solve_winner((T_all.N==64?~0ull:((1ull<<T_all.N)-1ull)), W_all_base);
+    int base_winner = solver_all.solve_winner((T_all.N==64?~0ull:((1ull<<T_all.N)-1ull)));
     vector<int> base_elim;
     solver_all.reconstruct((T_all.N==64?~0ull:((1ull<<T_all.N)-1ull)), base_winner, W_all_base, base_elim);
 
@@ -778,7 +777,7 @@ int main(){
             auto &T = T_sat[si]; auto &S = sol_sat[si];
             S.reset_epoch(Wperm);
             uint64_t full = (T.N==64?~0ull:((1ull<<T.N)-1ull));
-            int w = S.solve_winner(full, Wperm);
+            int w = S.solve_winner(full);
             if (w<0 || T.names[w] != "C") { ++all_failures; success = false; }
             if (w<0) {
                 cerr << "ERROR ERROR: Unable to find winner in graph for SAT clause: ";
@@ -794,7 +793,7 @@ int main(){
             auto &T = T_unsat[ui]; auto &S = sol_uns[ui];
             S.reset_epoch(Wperm);
             uint64_t full = (T.N==64?~0ull:((1ull<<T.N)-1ull));
-            int w = S.solve_winner(full, Wperm);
+            int w = S.solve_winner(full);
             if (w>=0 && T.names[w] == "C") { ++all_failures; success = false; }
             if (w<0) {
                 cerr << "ERROR ERROR: Unable to find winner in graph for UNSAT clause: ";
@@ -822,7 +821,7 @@ int main(){
                 uint64_t full = (T.N == 64 ? ~0ull : ((1ull << T.N) - 1ull));
 
                 // Solve and reconstruct elimination path
-                int w = S.solve_winner(full, Wperm);
+                int w = S.solve_winner(full);
                 vector<int> elim;
                 S.reconstruct(full, w, Wperm, elim);
 
@@ -842,7 +841,7 @@ int main(){
                 S.reset_epoch(Wperm);
 
                 uint64_t full = (T.N == 64 ? ~0ull : ((1ull << T.N) - 1ull));
-                int w = S.solve_winner(full, Wperm);
+                int w = S.solve_winner(full);
                 vector<int> elim;
                 S.reconstruct(full, w, Wperm, elim);
 
