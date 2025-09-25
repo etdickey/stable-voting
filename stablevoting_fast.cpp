@@ -77,7 +77,7 @@ struct GraphTemplate {
     }
 
     // Add this margin overload inside GraphTemplate if you like:
-    inline int margin(int u, int v, const std::vector<int>& W) const {
+    inline int margin(int u, int v, const vector<int>& W) const {
         return margin(u, v, W.data());
     }
 };
@@ -298,7 +298,7 @@ struct SVFast {
         while (mask) {
             uint64_t b = mask & -mask;        // lsb64(mask)
             int i = ctz64(b);                 // index of that bit
-            if (!first) std::cout << sep;
+            if (!first) cout << sep;
             cout << G.names[i];
             first = false;
             mask ^= b;                        // pop that bit
@@ -310,7 +310,7 @@ struct SVFast {
     bool exists_chain(int src, int dst, int threshold, uint64_t mask, const int *W){
         if (src==dst) return true;
         // Reset vis
-        memset(vis.data(), 0, (size_t)N);
+        fill(vis.begin(), vis.end(), uint8_t{0});
         int head=0, tail=0;
         vis[src]=1; q[tail++]=src;
         while (head<tail){
@@ -429,7 +429,8 @@ struct SVFast {
 // this starts in increasing order first, and groups are assigned 0->11
 static inline void fibonacci_series(int n, int seed1, int seed2, vector<int>& out){
     out.clear(); out.reserve(n);
-    if (n<=0) return; if (n==1){ out.push_back(seed1); return; }
+    if (n<=0) return;
+    if (n==1){ out.push_back(seed1); return; }
     long long a=seed1,b=seed2; out.push_back((int)a); out.push_back((int)b);
     for (int i=2;i<n;++i){ long long c=a+b; if (c>INT_MAX) c=INT_MAX; out.push_back((int)c); a=b; b=c; }
 }
@@ -450,7 +451,7 @@ static inline void fibonacci_series(int n, int seed1, int seed2, vector<int>& ou
 // If W != nullptr, also prints the realized margin W[group] + off for that edge.
 static inline void print_graph_edges(const GraphTemplate& T,
                                      const int* W = nullptr,
-                                     std::ostream& out = std::cout) {
+                                     ostream& out = cout) {
     const int N = T.N;
     for (int u = 0; u < N; ++u) {
         for (int v = 0; v < N; ++v) {
@@ -472,22 +473,22 @@ static inline void print_graph_edges(const GraphTemplate& T,
 // Requires W (since margins depend on weights).
 static inline void print_margin_matrix(const GraphTemplate& T,
                                        const int* W,
-                                       std::ostream& out = std::cout,
+                                       ostream& out = cout,
                                        int field_width = 6) {
     const int N = T.N;
     // header
-    out << std::setw(field_width) << "";
-    for (int v = 0; v < N; ++v) out << std::setw(field_width) << T.names[v];
+    out << setw(field_width) << "";
+    for (int v = 0; v < N; ++v) out << setw(field_width) << T.names[v];
     out << '\n';
     // rows
     for (int u = 0; u < N; ++u) {
-        out << std::setw(field_width) << T.names[u];
+        out << setw(field_width) << T.names[u];
         for (int v = 0; v < N; ++v) {
             if (u == v) {
-                out << std::setw(field_width) << ".";
+                out << setw(field_width) << ".";
             } else {
                 int m = T.margin(u, v, W);
-                out << std::setw(field_width) << m;
+                out << setw(field_width) << m;
             }
         }
         out << '\n';
@@ -498,7 +499,7 @@ static inline void print_margin_matrix(const GraphTemplate& T,
 // If W == nullptr, labels show "g:off". If W provided, shows "m=...".
 static inline void print_graph_dot(const GraphTemplate& T,
                                    const int* W = nullptr,
-                                   std::ostream& out = std::cout) {
+                                   ostream& out = cout) {
     const int N = T.N;
     out << "digraph G {\n";
     out << "  rankdir=LR;\n";
@@ -532,11 +533,11 @@ struct EdgeRec {
 
 static inline void print_edges_by_weight(const GraphTemplate& T,
                                          const int* W,
-                                         std::ostream& out = std::cout,
+                                         ostream& out = cout,
                                          bool descending = true,
                                          size_t max_edges = (size_t)-1) {
     const int N = T.N;
-    std::vector<EdgeRec> E;
+    vector<EdgeRec> E;
     E.reserve((size_t)N * (size_t)(N - 1) / 2);
 
     // Collect each existing directed edge exactly once.
@@ -553,12 +554,12 @@ static inline void print_edges_by_weight(const GraphTemplate& T,
     }
 
     // Sort by realized weight (margin)
-    std::sort(E.begin(), E.end(), [&](const EdgeRec& a, const EdgeRec& b){
+    sort(E.begin(), E.end(), [&](const EdgeRec& a, const EdgeRec& b){
         return descending ? (a.w > b.w) : (a.w < b.w);
     });
 
     // Print (optionally only top max_edges)
-    size_t cnt = std::min(max_edges, E.size());
+    size_t cnt = min(max_edges, E.size());
     for (size_t i = 0; i < cnt; ++i) {
         const auto& e = E[i];
         out << T.names[e.u] << " -> " << T.names[e.v]
@@ -570,27 +571,27 @@ static inline void print_edges_by_weight(const GraphTemplate& T,
 // (They forward to the pointer versions without copying.)
 
 static inline void print_graph_edges(const GraphTemplate& T,
-                                     const std::vector<int>& W,
-                                     std::ostream& out = std::cout) {
+                                     const vector<int>& W,
+                                     ostream& out = cout) {
     print_graph_edges(T, W.data(), out);
 }
 
 static inline void print_margin_matrix(const GraphTemplate& T,
-                                       const std::vector<int>& W,
-                                       std::ostream& out = std::cout,
+                                       const vector<int>& W,
+                                       ostream& out = cout,
                                        int field_width = 6) {
     print_margin_matrix(T, W.data(), out, field_width);
 }
 
 static inline void print_graph_dot(const GraphTemplate& T,
-                                   const std::vector<int>& W,
-                                   std::ostream& out = std::cout) {
+                                   const vector<int>& W,
+                                   ostream& out = cout) {
     print_graph_dot(T, W.data(), out);
 }
 
 static inline void print_edges_by_weight(const GraphTemplate& T,
-                                         const std::vector<int>& W,
-                                         std::ostream& out = std::cout,
+                                         const vector<int>& W,
+                                         ostream& out = cout,
                                          bool descending = true,
                                          size_t max_edges = (size_t)-1) {
     print_edges_by_weight(T, W.data(), out, descending, max_edges);
@@ -617,11 +618,23 @@ static inline void print_edges_by_weight(const GraphTemplate& T,
 // return 0;
 // // W as vector
 // print_edges_by_weight(T, W);                    // descending
-// print_edges_by_weight(T, W, std::cout, false);  // ascending
+// print_edges_by_weight(T, W, cout, false);  // ascending
 // // or top-K
-// print_edges_by_weight(T, W, std::cout, true, 20);
+// print_edges_by_weight(T, W, cout, true, 20);
 
-
+inline string join_clauses(const vector<string>& v) {
+    if (v.empty()) return {};
+    size_t total = 0;
+    for (const auto& s : v) total += s.size();
+    string out;
+    out.reserve(total + (v.size() - 1)); // commas
+    out += v[0];
+    for (size_t i = 1; i < v.size(); ++i) {
+        out.push_back(',');
+        out += v[i];
+    }
+    return out;
+}
 
 
 
@@ -639,9 +652,8 @@ int main(){
 
     const int STARTING_WEIGHT = 100;
     const int NUM_GROUPS = 11;        // effective weight buckets
-    const size_t PRINT_EVERY = 50000;  // progress cadence
+    const size_t PRINT_EVERY = 5000;  // progress cadence
     const double TIME_EVERY_SEC = 60.0;
-    // const bool TRACK_DIFFS = false;   // set true to record permutations that change baseline triple
 
     // Base four clauses
     vector<string> base = {"(x1, x2)", "(x1, ~x2)", "(~x1, x2)", "(~x1, ~x2)"};
@@ -695,8 +707,8 @@ int main(){
 
     // Stats
     const size_t total_clause_runs = sat_sets.size() + unsat_sets.size();
-    size_t perms_done=0, all_failures=0, perms_failed=0, diffs=0;
-    double total_time=0.0, t_graph=0.0, t_solve=0.0;
+    size_t perms_done=0, all_failures=0;
+    double total_time=0.0;
 
     // Prepare solvers per template (reuse memory)
     vector<SVFast> sol_sat; sol_sat.reserve(T_sat.size()); for (auto &t: T_sat) sol_sat.emplace_back(t);
@@ -750,31 +762,55 @@ int main(){
         }
 
         if (success) {
+            // Found a permutation where all SATs pass (C wins) and all UNSATs pass (C does not win).
             cout << "FOUND ONE! perms_done=" << perms_done << " weights=[";
-            for (int g = 0; g < NUM_GROUPS; ++g) {
-                if (g) cout << ',';
-                cout << Wperm[g];
-            }
-            cout << "]";
-
-            // Summarize outcome on the full 4-clause set for this permutation
-            solver_all.reset_epoch();
-            uint64_t full_all = (T_all.N == 64 ? ~0ull : ((1ull << T_all.N) - 1ull));
-            int w_all = solver_all.solve_winner(full_all, Wperm);
-
-            vector<int> elim_all;
-            solver_all.reconstruct(full_all, w_all, Wperm, elim_all);
-
-            cout << "  all-clauses winner="
-                 << (w_all >= 0 ? T_all.names[w_all] : string("None"));
-
-            cout << "  elim=[";
-            for (size_t i = 0; i < elim_all.size(); ++i) {
-                if (i) cout << ',';
-                cout << T_all.names[elim_all[i]];
-            }
+            for (int g = 0; g < NUM_GROUPS; ++g) { if (g) cout << ','; cout << Wperm[g]; }
             cout << "]\n";
+
+            // ---- Print SAT cases: winner, decisive edge, and full elimination order ----
+            cout << "SAT cases (" << T_sat.size() << "):\n";
+            for (size_t si = 0; si < T_sat.size(); ++si) {
+                const auto& T = T_sat[si];
+                auto& S = sol_sat[si];
+                S.reset_epoch();
+
+                // Full bitmask of active nodes for this template
+                uint64_t full = (T.N == 64 ? ~0ull : ((1ull << T.N) - 1ull));
+
+                // Solve and reconstruct elimination path
+                int w = S.solve_winner(full, Wperm);
+                vector<int> elim;
+                S.reconstruct(full, w, Wperm, elim);
+
+                // clause set, winner, elimination order
+                cout << "  [" << si << "] " << join_clauses(sat_sets[si]) << "\n";
+                cout << "     winner=" << (w >= 0 ? T.names[w] : string("None"));
+                cout << "     elim=[";
+                for (size_t i = 0; i < elim.size(); ++i) { if (i) cout << ','; cout << T.names[elim[i]]; }
+                cout << "]\n";
+            }
+
+            // ---- Print UNSAT cases: winner, decisive edge, and full elimination order ----
+            cout << "UNSAT cases (" << T_unsat.size() << "):\n";
+            for (size_t ui = 0; ui < T_unsat.size(); ++ui) {
+                const auto& T = T_unsat[ui];
+                auto& S = sol_uns[ui];
+                S.reset_epoch();
+
+                uint64_t full = (T.N == 64 ? ~0ull : ((1ull << T.N) - 1ull));
+                int w = S.solve_winner(full, Wperm);
+                vector<int> elim;
+                S.reconstruct(full, w, Wperm, elim);
+
+                // clause set, winner, elimination order
+                cout << "  [" << ui << "] " << join_clauses(unsat_sets[ui]) << "\n";
+                cout << "     winner=" << (w >= 0 ? T.names[w] : string("None"));
+                cout << "     elim=[";
+                for (size_t i = 0; i < elim.size(); ++i) { if (i) cout << ','; cout << T.names[elim[i]]; }
+                cout << "]\n";
+            }
         }
+
 
 
         auto t1 = chrono::steady_clock::now();
@@ -785,12 +821,11 @@ int main(){
         if ((perms_done % PRINT_EVERY == 0) || chrono::duration<double>(now - t_last).count() >= TIME_EVERY_SEC){
             double avg = total_time / max<size_t>(1, perms_done);
             double per_case = total_time / max<size_t>(1, perms_done*total_clause_runs);
-            cout.setf(std::ios::fixed); cout<<setprecision(4);
+            cout.setf(ios::fixed); cout<<setprecision(4);
             cout << "[PROGRESS] perms_done="<<perms_done
                  << " fails="<<all_failures
-                 // << " diffs="<< (TRACK_DIFFS?diffs:0)
                  << " avg_perm="<<avg<<"s"
-                 << " avg_case="<<per_case<<"s\n";
+                 << " avg_case="<<per_case<<"s"<<endl;
             t_last = now;
         }
 
@@ -798,7 +833,6 @@ int main(){
 
     cout << "\nDONE. perms_done="<<perms_done
          << " fails="<<all_failures
-         // << " diffs="<<(TRACK_DIFFS?diffs:0)
          << "\n";
 
     return 0;
