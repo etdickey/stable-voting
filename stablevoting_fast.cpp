@@ -15,18 +15,24 @@
 #include <iomanip>
 using namespace std;
 
+#if defined(__GNUC__) || defined(__clang__)
+  #define AI inline __attribute__((always_inline))
+#else
+  #define AI inline
+#endif
+
 // ========================= Utilities =========================
 // lsb64(x) returns the mask of x’s least-significant 1-bit (x & −x)
 // ctz64(x) returns the number of trailing zero bits (the index of that bit).
 // ctz64(lsb64(x)) returns the index of the first active candidate with ~speed~
-static inline int popcount64(uint64_t x){ return __builtin_popcountll(x); }
-static inline int ctz64(uint64_t x){ return __builtin_ctzll(x); }
-static inline uint64_t lsb64(uint64_t x){ return x & -x; }
+static AI int popcount64(uint64_t x){ return __builtin_popcountll(x); }
+static AI int ctz64(uint64_t x){ return __builtin_ctzll(x); }
+static AI uint64_t lsb64(uint64_t x){ return x & -x; }
 
 // ========================= Clause Parsing (fast) =========================
 // Accepts tokens like: (x1, ~x2) or x3 or ~x10; commas/parentheses/whitespace ignored
 // Output: vector of (var_index>=1, polarity=true for x, false for ~x)
-static inline void parse_clause_fast(const string& s, vector<pair<int,bool>>& out, int& max_var){
+static AI void parse_clause_fast(const string& s, vector<pair<int,bool>>& out, int& max_var){
     out.clear();
     const char* p = s.c_str();
     while (*p){
@@ -67,9 +73,9 @@ struct GraphTemplate {
     vector<uint8_t> group;  // valid only when dir[u,v]==1
     vector<int16_t> off;    // valid only when dir[u,v]==1
 
-    inline int IDX(int u,int v) const { return u*N + v; }
+    AI int IDX(int u,int v) const { return u*N + v; }
 
-    inline int margin(int u,int v, const int *W) const {
+    AI int margin(int u,int v, const int *W) const {
         int iuv = IDX(u,v);
         if (dir[iuv]) return W[group[iuv]] + (int)off[iuv];
         int ivu = IDX(v,u);
@@ -77,19 +83,19 @@ struct GraphTemplate {
     }
 
     // Add this margin overload inside GraphTemplate if you like:
-    inline int margin(int u, int v, const vector<int>& W) const {
+    AI int margin(int u, int v, const vector<int>& W) const {
         return margin(u, v, W.data());//.data is constant time
     }
 };
 
-static inline void tmpl_init(GraphTemplate& T, int N){
+static AI void tmpl_init(GraphTemplate& T, int N){
     T.N = N;
     T.dir.assign((size_t)N*(size_t)N, 0);
     T.group.assign((size_t)N*(size_t)N, 0);
     T.off.assign((size_t)N*(size_t)N, 0);
 }
 
-static inline void tmpl_add_edge(GraphTemplate& T, int u,int v, int g, int16_t& cur_d){
+static AI void tmpl_add_edge(GraphTemplate& T, int u,int v, int g, int16_t& cur_d){
     if (u==v) return; // ignore self
     int iuv=T.IDX(u,v), ivu=T.IDX(v,u);
     if (T.dir[iuv] || T.dir[ivu]) {
@@ -268,11 +274,14 @@ struct SVFast {
     vector<uint32_t> memo_epoch;    // epoch tag
     uint32_t EPOCH = 1;
 
+    struct Match { int A,B,m; };
+    vector<Match> edges_sorted;
+
     // Per-permutation realized margins and sorted adjacency
     bool prepared = false;
-    std::vector<int> M;                  // size N*N, M[u*N+v] = margin(u->v)
-    std::vector<std::vector<int>> nbrs;  // nbrs[u] = v's sorted by M[u,v] desc
-    inline int MIDX(int u,int v) const { return u*N + v; }
+    vector<int> M;                  // size N*N, M[u*N+v] = margin(u->v)
+    vector<vector<int>> nbrs;  // nbrs[u] = v's sorted by M[u,v] desc
+    AI int MIDX(int u,int v) const { return u*N + v; }
 
     // Scratch
     vector<int> q;           // BFS queue (N)
@@ -290,6 +299,8 @@ struct SVFast {
         if ((int)M.size() != N*N) M.assign(N*N, 0);
         if ((int)nbrs.size() != N) nbrs.assign(N, {});
         // Fill realized margins for the tournament (both directions).
+        edges_sorted.clear();
+        edges_sorted.reserve((size_t)N * (N - 1));
         for (int u=0; u<N; ++u) {
             for (int v=0; v<N; ++v) if (u!=v) {
                 int iuv = G.IDX(u,v);
@@ -297,22 +308,28 @@ struct SVFast {
                     int m = W[(int)G.group[iuv]] + (int)G.off[iuv];
                     M[MIDX(u,v)] = m;
                     M[MIDX(v,u)] = -m;
+                    edges_sorted.push_back({u, v, m}); // only the existing arc a->b
+                    edges_sorted.push_back({v, u, -m});
                 }
             }
         }
+        // global sort by margin descending (stable order for this permutation)
+        sort(edges_sorted.begin(), edges_sorted.end(),
+            [](const Match& x, const Match& y){ return x.m > y.m; });
+
         // Build adjacency lists sorted by realized margin
         for (int u=0; u<N; ++u) {
             auto& L = nbrs[u];
             L.clear(); L.reserve(N-1);
             for (int v=0; v<N; ++v) if (u!=v) L.push_back(v);
-            std::sort(L.begin(), L.end(),
+            sort(L.begin(), L.end(),
                       [&](int a,int b){ return M[MIDX(u,a)] > M[MIDX(u,b)]; });
         }
+
         prepared = true;
     }
 
-
-    inline void reset_epoch(const int* W){
+    AI void reset_epoch(const int* W){
         if (++EPOCH == 0){
             // rare wrap: hard reset
             fill(memo_epoch.begin(), memo_epoch.end(), 0);
@@ -321,9 +338,9 @@ struct SVFast {
         prepare_for_weights(W);
     }
 
-    inline int margin(int u,int v, const int *W) const { return G.margin(u,v,W); }
-    inline int margin_fast(int u,int v) const { return M[MIDX(u,v)]; }// assume prepared==true
-    inline bool in_mask(uint64_t mask, int i) const { return (mask >> i) & 1ull; }
+    AI int margin(int u,int v, const int *W) const { return G.margin(u,v,W); }
+    AI int margin_fast(int u,int v) const { return M[MIDX(u,v)]; }// assume prepared==true
+    AI bool in_mask(uint64_t mask, int i) const { return (mask >> i) & 1ull; }
 
     // In SVFast:
     void print_mask_names(uint64_t mask, const char* sep = ",") const {
@@ -339,8 +356,7 @@ struct SVFast {
         cout << '\n';
     }
 
-
-    bool exists_chain(int src, int dst, int threshold, uint64_t mask){//, const int *W){
+    AI bool exists_chain(int src, int dst, int threshold, uint64_t mask){
         if (src==dst) return true;
         // Reset vis
         fill(vis.begin(), vis.end(), uint8_t{0});
@@ -371,106 +387,96 @@ struct SVFast {
         return false;
     }
 
-    inline bool b_defeats_a(int B, int A, uint64_t mask){
+    AI bool b_defeats_a(int B, int A, uint64_t mask){
         int t = margin_fast(B,A);
         return !exists_chain(A,B,t,mask);
     }
 
-    struct Match { int A,B,m; };
-
-    int solve_winner(uint64_t mask){
+    int solve_winner(uint64_t mask) {
         // is the current graph permutation the one where memo_winner was set?
         size_t key = (size_t)mask;
-        if (memo_epoch[key]==EPOCH){ return memo_winner[key]; }
+        if (memo_epoch[key]==EPOCH) return memo_winner[key];
 
-        // single survivor?
-        int live = popcount64(mask);//count number of candidates "active"
-        if (live==1){
+        if (popcount64(mask)==1){// single survivor?
             int w = ctz64(mask);
             memo_epoch[key]=EPOCH; memo_winner[key]=w; return w;
         }
 
-        // Build matches (A,B) with rule; sort by margin desc
-        // Upper bound edges ~ N*(N-1)
-        vector<Match> matches; matches.clear(); matches.reserve(N*(N-1));
-        uint64_t ma = mask;
-        int counter = 0;
-        while (ma){ // for all active candidates
-            // lsb64(x) returns the mask of x’s least-significant 1-bit (x & −x)
-            // ctz64(x) returns the number of trailing zero bits (the index of that bit).
-            // ctz64(lsb64(x)) returns the index of the first active candidate with ~speed~
-            int A = ctz64(lsb64(ma)); ma ^= lsb64(ma);//remove A
-            uint64_t mb = mask ^ (1ull<<A);//flip the A bit (^ IS XOR)
-            while (mb){ // iterate over all b != a (uses mask above, not ma)
-                int B = ctz64(lsb64(mb)); mb ^= lsb64(mb);//remove B
-                int m = margin_fast(A,B);
-                if (m>=0 || (m<0 && !b_defeats_a(B,A,mask))) matches.push_back({A,B,m});
-                counter++;
-            }
-        }
-        // cout << "  number of possible edges: " << counter << ", actual num: " << matches.size() << endl;
-        // Sort candidate matches by descending margin so we try the strongest edges first.
-        // (Greedy ordering mirrors the Stable-Voting elimination semantics.)
-        sort(matches.begin(), matches.end(), [](const Match& x, const Match& y){ return x.m>y.m; });
+        // vector<string> ansS = {"F1", "X2", "X1", "T1", "L4", "L3", "L2", "F2", "L1", "T2", "C"};
+        //                     // ['F1', 'X2', 'X1', 'T1', 'L4', 'L3', 'L2', 'F2', 'L1', 'T2']
+        // vector<int> ans(N);
+        // for(int i=0; i<N; i++){
+        //     ans[i] = find(G.names.begin(), G.names.end(), ansS[i]) - G.names.begin();
+        //     // if(find(G.names.begin(), G.names.end(), ansS[i]) == G.names.end()) cout << "Couldn't find this guy: \'" << ansS[i] << "\'" << endl;
+        //     // else cout << "Found \'" << ansS[i] << "\' at " << ans[i] << endl;
+        // }
+        // int tmpidx = popcount64(mask);
+        // cout << "Curr cand left: " << tmpidx << " [";
+        // for (int i = 0; i < N; ++i) if (mask & (1ull << i)) cout << G.names[i] << ", ";
+        // cout << "], curr removed: [";
+        // for (int i = 0; i < N; ++i) if (!(mask & (1ull << i))) cout << G.names[i] << ", ";
+        // cout << "], winner should be:" << ans[N - tmpidx] << ": " << ansS[N - tmpidx] << '\n';
 
-        // Try each (A -> B) in order: "remove B" and see if A can still be the final winner.
-        for (const auto& e: matches){
-            // nmask: active set after hypothetically eliminating B.
-            // (Clear bit B; &~ is clearer than XOR here because B may already be off in other contexts.)
-            uint64_t nmask = mask & ~(1ull<<e.B);
-            // Recursively solve on the reduced candidate set using the same weights W.
-            int w = solve_winner(nmask);
-            // If the recursive winner equals A, then (A -> B) is a valid decisive step for this state.
-            // Cache the result under the current EPOCH (generation) and return immediately.
-            if (w==e.A){
-                memo_epoch[key]=EPOCH; memo_winner[key]=w; return w;
-            }
-            // Otherwise, this (A -> B) doesn’t lead to A winning; try the next match.
-        }
-        // No match yields A as the eventual winner from this state: memoize failure and return -1.
-        memo_epoch[key]=EPOCH; memo_winner[key]=-1; return -1;
-    }
+        // Scan edges in global descending order; try the first valid one whose endpoints are active.
+        for (const auto& e : edges_sorted) {
+            int A = e.A, B = e.B, m = e.m;
+            if (((mask >> A) & 1ull) == 0 || ((mask >> B) & 1ull) == 0) continue;  // edge not in subtournament
 
-    // Reconstruct elimination order + decisive edge using memoized winners
-    void reconstruct_recurse(uint64_t mask, int WN, const int *W,
-                     vector<int>& elim){
-        if (popcount64(mask)==1) return;
-        vector<Match> matches; matches.clear(); matches.reserve(N*(N-1));
-        uint64_t ma = mask;
-        while (ma){ int A=ctz64(lsb64(ma)); ma^=lsb64(ma);//this should be just the winner, not all edges, and add both directions
-            if (WN != A){ continue; }
-            uint64_t mb = mask ^ (1ull<<A);
-            while (mb){ int B=ctz64(lsb64(mb)); mb^=lsb64(mb);
-                int m=margin_fast(A,B);
-                // todo: validate with chatgpt to be sure bit stuff works
-                if (m>=0 || (m<0 && !b_defeats_a(B,A,mask))) matches.push_back({A,B,m});
-                // if((m<0) && !(m<0 && !b_defeats_a(B,A,mask,W))) {
-                //     cerr << "ERROR: winner: " << G.names[A] << " does not defeat: " << G.names[B] << endl;
+            if (m > 0 || (m <= 0 && !b_defeats_a(B, A, mask))) {
+                uint64_t nmask = mask & ~(1ull << B);  // eliminate B
+                // cout << space << G.names[A] << "->" << G.names[B] << " START\n";
+                // space += "| ";
+                int w = solve_winner(nmask);
+                // space = space.substr(0, space.length() - 2);
+
+                if (w == A) {
+                    // cout << space << G.names[A] << "->" << G.names[B] << " SUCCEEDED (" << G.names[w] << " won)\n";
+                    memo_epoch[key] = EPOCH; memo_winner[key] = w; return w;
+                }
+                // else{
+                //     cout << space << G.names[A] << "->" << G.names[B] << " Failed (" << G.names[w] << " won)\n";
+                //
                 // }
             }
         }
-        sort(matches.begin(), matches.end(), [](const Match& x, const Match& y){ return x.m>y.m; });
-        for (const auto& e: matches){
-            // A will always be WN, see above
-            uint64_t nmask = mask & ~(1ull<<e.B);
-            if (solve_winner(nmask)==e.A){
-                elim.push_back(e.B);
-                reconstruct_recurse(nmask, WN, W, elim);
-                return;
+        memo_epoch[key] = EPOCH; memo_winner[key] = -1; return -1;
+    }
+
+    //new 3
+    AI void reconstruct(uint64_t mask, int WN, vector<int>& elim) {
+        elim.clear();
+        if (popcount64(mask) == 1) return;
+
+        while (true) {
+            bool progressed = false;
+
+            for (const auto& e : edges_sorted) {
+                int A = e.A, B = e.B, m = e.m;
+                if (A != WN || ((mask >> A) & 1ull) == 0 || ((mask >> B) & 1ull) == 0) continue;
+
+                if (m > 0 || (m <= 0 && !b_defeats_a(B, A, mask))) {
+                    uint64_t nmask = mask & ~(1ull << B);
+                    if (solve_winner(nmask) == WN) {
+                        elim.push_back(B);
+                        mask = nmask;
+                        progressed = true;
+                        if (popcount64(mask) == 1) return;
+                        break;  // restart from the strongest edge on the reduced mask
+                    }
+                }
+            }
+
+            if (!progressed){
+                cerr << "WARN WARN: Reconstruction failed" << endl;
+                return; // no consistent step found (shouldn't happen if WN is valid)
             }
         }
-        cerr << "WARN WARN: Reconstruction failed" << endl;
-    }
-    void reconstruct(uint64_t mask, int WN, const int *W,
-                     vector<int>& elim){
-        elim.clear();
-        reconstruct_recurse(mask, WN, W, elim);
     }
 };
 
 // ========================= Group Weights =========================
 // this starts in increasing order first, and groups are assigned 0->11
-static inline void fibonacci_series(int n, int seed1, int seed2, vector<int>& out){
+static AI void fibonacci_series(int n, int seed1, int seed2, vector<int>& out){
     out.clear(); out.reserve(n);
     if (n<=0) return;
     if (n==1){ out.push_back(seed1); return; }
@@ -492,7 +498,7 @@ static inline void fibonacci_series(int n, int seed1, int seed2, vector<int>& ou
 
 // Edge list: prints exactly the directed edges that exist in the tournament.
 // If W != nullptr, also prints the realized margin W[group] + off for that edge.
-static inline void print_graph_edges(const GraphTemplate& T,
+static AI void print_graph_edges(const GraphTemplate& T,
                                      const int* W = nullptr,
                                      ostream& out = cout) {
     const int N = T.N;
@@ -514,7 +520,7 @@ static inline void print_graph_edges(const GraphTemplate& T,
 
 // Margin matrix: prints m(u,v) in a compact NxN table.
 // Requires W (since margins depend on weights).
-static inline void print_margin_matrix(const GraphTemplate& T,
+static AI void print_margin_matrix(const GraphTemplate& T,
                                        const int* W,
                                        ostream& out = cout,
                                        int field_width = 6) {
@@ -540,7 +546,7 @@ static inline void print_margin_matrix(const GraphTemplate& T,
 
 // Graphviz DOT: minimal digraph with (optional) margin labels.
 // If W == nullptr, labels show "g:off". If W provided, shows "m=...".
-static inline void print_graph_dot(const GraphTemplate& T,
+static AI void print_graph_dot(const GraphTemplate& T,
                                    const int* W = nullptr,
                                    ostream& out = cout) {
     const int N = T.N;
@@ -574,7 +580,7 @@ struct EdgeRec {
     int w;       // realized weight = W[g] + off
 };
 
-static inline void print_edges_by_weight(const GraphTemplate& T,
+static AI void print_edges_by_weight(const GraphTemplate& T,
                                          const int* W,
                                          ostream& out = cout,
                                          bool descending = true,
@@ -613,26 +619,26 @@ static inline void print_edges_by_weight(const GraphTemplate& T,
 // ---- Vector-friendly wrappers for the printers ----
 // (They forward to the pointer versions without copying.)
 
-static inline void print_graph_edges(const GraphTemplate& T,
+static AI void print_graph_edges(const GraphTemplate& T,
                                      const vector<int>& W,
                                      ostream& out = cout) {
     print_graph_edges(T, W.data(), out);
 }
 
-static inline void print_margin_matrix(const GraphTemplate& T,
+static AI void print_margin_matrix(const GraphTemplate& T,
                                        const vector<int>& W,
                                        ostream& out = cout,
                                        int field_width = 6) {
     print_margin_matrix(T, W.data(), out, field_width);
 }
 
-static inline void print_graph_dot(const GraphTemplate& T,
+static AI void print_graph_dot(const GraphTemplate& T,
                                    const vector<int>& W,
                                    ostream& out = cout) {
     print_graph_dot(T, W.data(), out);
 }
 
-static inline void print_edges_by_weight(const GraphTemplate& T,
+static AI void print_edges_by_weight(const GraphTemplate& T,
                                          const vector<int>& W,
                                          ostream& out = cout,
                                          bool descending = true,
@@ -665,7 +671,7 @@ static inline void print_edges_by_weight(const GraphTemplate& T,
 // // or top-K
 // print_edges_by_weight(T, W, cout, true, 20);
 
-inline string join_clauses(const vector<string>& v) {
+AI string join_clauses(const vector<string>& v) {
     if (v.empty()) return {};
     size_t total = 0;
     for (const auto& s : v) total += s.size();
@@ -683,19 +689,17 @@ inline string join_clauses(const vector<string>& v) {
 
 
 
-
-
-
 // ========================= Exhaustive Driver (fast) =========================
 #define STABLEVOTING_MAIN true
 
 #ifdef STABLEVOTING_MAIN
 int main(){
-    ios::sync_with_stdio(false); cin.tie(nullptr);
+    // -O3 -march=native -flto -fomit-frame-pointer -DNDEBUG
+    // ios::sync_with_stdio(false); cin.tie(nullptr);
 
     const int STARTING_WEIGHT = 100;
     const int NUM_GROUPS = 11;        // effective weight buckets
-    const size_t PRINT_EVERY = 5000;  // progress cadence
+    const size_t PRINT_EVERY = 50000;  // progress cadence
     const double TIME_EVERY_SEC = 60.0;
 
     // Base four clauses
@@ -731,7 +735,7 @@ int main(){
     solver_all.reset_epoch(W_all_base);
     int base_winner = solver_all.solve_winner((T_all.N==64?~0ull:((1ull<<T_all.N)-1ull)));
     vector<int> base_elim;
-    solver_all.reconstruct((T_all.N==64?~0ull:((1ull<<T_all.N)-1ull)), base_winner, W_all_base, base_elim);
+    solver_all.reconstruct((T_all.N==64?~0ull:((1ull<<T_all.N)-1ull)), base_winner, base_elim);//W_all_base
 
     // Print baseline summary
     cout << "Clause: ";
@@ -823,7 +827,7 @@ int main(){
                 // Solve and reconstruct elimination path
                 int w = S.solve_winner(full);
                 vector<int> elim;
-                S.reconstruct(full, w, Wperm, elim);
+                S.reconstruct(full, w, elim);//Wperm
 
                 // clause set, winner, elimination order
                 cout << "  [" << si << "] " << join_clauses(sat_sets[si]) << "\n";
@@ -843,7 +847,7 @@ int main(){
                 uint64_t full = (T.N == 64 ? ~0ull : ((1ull << T.N) - 1ull));
                 int w = S.solve_winner(full);
                 vector<int> elim;
-                S.reconstruct(full, w, Wperm, elim);
+                S.reconstruct(full, w, elim);//Wperm
 
                 // clause set, winner, elimination order
                 cout << "  [" << ui << "] " << join_clauses(unsat_sets[ui]) << "\n";
