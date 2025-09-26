@@ -735,7 +735,7 @@ int main(){
     solver_all.reset_epoch(W_all_base);
     int base_winner = solver_all.solve_winner((T_all.N==64?~0ull:((1ull<<T_all.N)-1ull)));
     vector<int> base_elim;
-    solver_all.reconstruct((T_all.N==64?~0ull:((1ull<<T_all.N)-1ull)), base_winner, base_elim);//W_all_base
+    solver_all.reconstruct((T_all.N==64?~0ull:((1ull<<T_all.N)-1ull)), base_winner, base_elim);
 
     // Print baseline summary
     cout << "Clause: ";
@@ -827,7 +827,7 @@ int main(){
                 // Solve and reconstruct elimination path
                 int w = S.solve_winner(full);
                 vector<int> elim;
-                S.reconstruct(full, w, elim);//Wperm
+                S.reconstruct(full, w, elim);
 
                 // clause set, winner, elimination order
                 cout << "  [" << si << "] " << join_clauses(sat_sets[si]) << "\n";
@@ -847,7 +847,7 @@ int main(){
                 uint64_t full = (T.N == 64 ? ~0ull : ((1ull << T.N) - 1ull));
                 int w = S.solve_winner(full);
                 vector<int> elim;
-                S.reconstruct(full, w, elim);//Wperm
+                S.reconstruct(full, w, elim);
 
                 // clause set, winner, elimination order
                 cout << "  [" << ui << "] " << join_clauses(unsat_sets[ui]) << "\n";
