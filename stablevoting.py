@@ -750,6 +750,20 @@ for perm in itertools.permutations(weights_perm):#winner should be C
         tournament = digraph_to_tournament(G)
         mg = MarginGraph(get_candidates_from_digraph(G), tournament_to_edges(tournament))
         winners, elim_dict = stable_voting_with_explanation(mg, algorithm='basic')
+        # s...with_explanation(edata, curr_cands=None, strength_function=None, algorithm='basic')
+        # _s...with_explanation(edata,
+        #                       curr_cands = curr_cands,
+        #                       strength_function = strength_function,
+        #                       terminate_early=False)
+        # ws, mem_sv_winners, elim_dict, mem_elim_dict =
+        # _stable_voting_with_explanation(edata,
+        #                                curr_cands = edata.candidates,
+        #                                strength_function = edata.margin,
+        #                                sorted_matches = [(a, b, m)...],
+        #                                mem_sv_winners = {},
+        #                                mem_elim_dict = {},
+        #                                terminate_early = terminate_early
+        #                                )
         winner = winners[0]
         their_time += time.time() - trash_time
 
