@@ -750,6 +750,8 @@ for perm in itertools.permutations(weights_perm):#winner should be C
         tournament = digraph_to_tournament(G)
         mg = MarginGraph(get_candidates_from_digraph(G), tournament_to_edges(tournament))
         winners, elim_dict = stable_voting_with_explanation(mg, algorithm='basic')
+        # https://pref-voting.readthedocs.io/en/latest/margin_based_methods.html#stable-voting
+        # https://pref-voting.readthedocs.io/en/latest/_modules/pref_voting/margin_based_methods.html#stable_voting
         # s...with_explanation(edata, curr_cands=None, strength_function=None, algorithm='basic')
         # _s...with_explanation(edata,
         #                       curr_cands = curr_cands,
