@@ -93,9 +93,11 @@ static AI void tmpl_init(GraphTemplate& T, int N){
     T.dir.assign((size_t)N*(size_t)N, 0);
     T.group.assign((size_t)N*(size_t)N, 0);
     T.off.assign((size_t)N*(size_t)N, 0);
+    // names is reset in build_template_from_clauses
 }
 
 static AI void tmpl_add_edge(GraphTemplate& T, int u,int v, int g, int16_t& cur_d){
+    // cur_d = current delta (for group assignments)
     if (u==v) return; // ignore self
     int iuv=T.IDX(u,v), ivu=T.IDX(v,u);
     if (T.dir[iuv] || T.dir[ivu]) {
@@ -161,16 +163,19 @@ static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bo
     }
     CGP_IDX--;
 
-    // ---- g2: {Ti,Fj in clause k} -> Lk ----
+    // NO---- g2: {Ti,Fj in clause k} -> Lk ---- //ORIGINAL
+    // ---- g2: {Ti,Fj in clause k} <- Lk ----
     for (int k=0;k<m;++k){
         for (auto [var,pos] : clauses[k]){
             int i = var-1;
-            tmpl_add_edge(T, pos? Tn(i): Fn(i), L(k), CGP_IDX, cur[CGP_IDX]);
+            // tmpl_add_edge(T, pos? Tn(i): Fn(i), L(k), CGP_IDX, cur[CGP_IDX]); //ORIGINAL
+            tmpl_add_edge(T, pos? Fn(i): Tn(i), L(k), CGP_IDX, cur[CGP_IDX]);
         }
     }
     CGP_IDX--;
 
-    // ---- g3: Lk -> {Fi, Tj not in clause k}, opposite for those in it ----
+    // NO---- g3: Lk -> {Fi, Tj not in clause k}, opposite for those in it ---- //ORIGINAL
+    // ---- g3: Lk <- {Fi, Tj not in clause k}, opposite for those in it ----
     for (int k=0;k<m;++k){
         // mark presence
         static bool pres[128]; // n is tiny
@@ -181,7 +186,8 @@ static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bo
             if (it!=clauses[k].end()){
                 bool pos = it->second;
                 // opposite of present literal
-                tmpl_add_edge(T, L(k), pos? Fn(i): Tn(i), CGP_IDX, cur[CGP_IDX]);
+                // tmpl_add_edge(T, L(k), pos? Fn(i): Tn(i), CGP_IDX, cur[CGP_IDX]); //ORIGINAL
+                tmpl_add_edge(T, L(k), pos? Tn(i): Fn(i), CGP_IDX, cur[CGP_IDX]);
             }else{
                 // not in clause -> both
                 tmpl_add_edge(T, L(k), Fn(i), CGP_IDX, cur[CGP_IDX]);
@@ -247,9 +253,17 @@ static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bo
     }
     CGP_IDX--;
 
-    // ---- g10: Li -> Lj (i<j) ----
+    // // ---- g10: Li -> Lj (i<j) ----
+    // for (int i=0;i<m;++i) for (int j=i+1;j<m;++j){
+    //     tmpl_add_edge(T, L(i), L(j), CGP_IDX, cur[CGP_IDX]);
+    // }
+    // #13) Li -> Lj \forall i < j
     for (int i=0;i<m;++i) for (int j=i+1;j<m;++j){
-        tmpl_add_edge(T, L(i), L(j), CGP_IDX, cur[CGP_IDX]);
+        // if i-j is odd then Li -> Lj, otherwise Lj->Li
+        if ((i-j) % 2 == 1)
+            tmpl_add_edge(T, L(i), L(j), CGP_IDX, cur[CGP_IDX]);
+        else
+            tmpl_add_edge(T, L(j), L(i), CGP_IDX, cur[CGP_IDX]);
     }
 
     return T;
@@ -279,8 +293,8 @@ struct SVFast {
 
     // Per-permutation realized margins and sorted adjacency
     bool prepared = false;
-    vector<int> M;                  // size N*N, M[u*N+v] = margin(u->v)
-    vector<vector<int>> nbrs;  // nbrs[u] = v's sorted by M[u,v] desc
+    vector<int> M;                  // size N*N, M[u*N+v] = margin(u->v) NOT sorted
+    vector<vector<int>> nbrs;  // nbrs[u] = v's sorted by M[u,v] desc "neighbors"
     AI int MIDX(int u,int v) const { return u*N + v; }
 
     // Scratch
@@ -765,6 +779,7 @@ int main(){
     int Wperm[NUM_GROUPS];
 
     auto t_last = chrono::steady_clock::now();
+    auto START = t_last;
 
     // Exhaustive permutations of 11 weights
     size_t total_perms=1; for(int i=2;i<=NUM_GROUPS;++i) total_perms*= (size_t)i;
@@ -878,8 +893,11 @@ int main(){
 
     } while (next_permutation(W.begin(), W.end()));
 
+    auto now = chrono::steady_clock::now();
+    auto sec = chrono::duration<double>(now - START).count();
     cout << "\nDONE. perms_done="<<perms_done
          << " fails="<<all_failures
+         << " total time=" << sec << "s = ~" << sec/60.0 << "m = ~" << (sec/60.0)/60.0 << "hr"
          << "\n";
 
     return 0;
