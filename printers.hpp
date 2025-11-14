@@ -25,7 +25,7 @@ string get_elim_order_string(const vector<int>& elim, const GraphTemplate& T){
     string out = "";
     out += "[";
     for (size_t i = 0; i < elim.size(); ++i) {
-        if (i) out += ", ";
+        if (i) out += ",";
         out += T.names[elim[i]];
     }
     // If incomplete: elim should contain (K − 1) elements when mask had K survivors
@@ -49,6 +49,56 @@ AI string join_clauses(const vector<string>& v) {
         out += v[i];
     }
     return out;
+}
+
+template<size_t K>
+AI string join_assignment(const array<int,K>& a) {
+    // UNSAT-style or intentionally NULL → all -1
+    bool all_neg1 = true;
+    for (size_t i = 0; i < K; ++i) {
+        if (a[i] != -1) { all_neg1 = false; break; }
+    }
+    if (all_neg1) return "UNSAT";
+
+    // proper assignment → format (1,0,1)
+    string out; out.reserve(3*K + 2);
+
+    out.push_back('('); out.push_back(a[0] ? '1' : '0');
+    for (size_t i = 1; i < K; ++i) {
+        out.push_back(','); out.push_back(a[i] ? '1' : '0');
+    }
+    out.push_back(')');
+
+    return out;
+}
+
+template<size_t K>
+void print_sat_cases(const vector<GraphTemplate>& T_sat, vector<SVFast>& sol_sat,
+            const vector<vector<string>>& sat_sets,
+            const vector<array<int,K>>& sat_assign,
+            const int Wperm[/*NUM_GROUPS*/], bool UNSAT = false){
+    for (size_t si = 0; si < T_sat.size(); ++si) {
+        const auto& T = T_sat[si];
+        auto& S = sol_sat[si];
+
+        S.reset_epoch(Wperm);
+
+        // Solve and reconstruct elimination order
+        int w = S.solve_winner(T.full_mask);// Full bitmask of active nodes for this template
+
+        // Print clause set, winner, elimination order
+        cout << "  [" << si << "]";
+        cout << "  assign=" << (sat_assign.size() ? join_assignment(sat_assign[si]) : "UNINITIALIZED");
+        cout << "  " << join_clauses(sat_sets[si]);
+        cout << "\n";
+        cout << "     winner=" << (w >= 0 ? T.names[w] : string("None"));
+        if(!UNSAT || w>=0){ //print for SAT, if UNSAT, print if winner is valid
+            vector<int> elim;
+            S.reconstruct(T.full_mask, w, elim);
+            cout << "\n     elim=" << get_elim_order_string(elim, T);
+        }
+        cout << "\n";
+    }
 }
 
 
