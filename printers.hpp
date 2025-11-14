@@ -21,7 +21,7 @@
 // print_margin_matrix(T, Wperm);            // NxN margin table
 // print_graph_dot(T, Wperm);                // DOT you can pipe to dot -Tpng
 
-string get_elim_order_string(const vector<int>& elim, const GraphTemplate& T, int total_nodes_in_mask){
+string get_elim_order_string(const vector<int>& elim, const GraphTemplate& T){
     string out = "";
     out += "[";
     for (size_t i = 0; i < elim.size(); ++i) {
@@ -29,7 +29,7 @@ string get_elim_order_string(const vector<int>& elim, const GraphTemplate& T, in
         out += T.names[elim[i]];
     }
     // If incomplete: elim should contain (K − 1) elements when mask had K survivors
-    if ((int)elim.size() + 1 != total_nodes_in_mask) {
+    if ((int)elim.size() + 1 != T.N) {
         out += " (incomplete)";
     }
     out += "]";

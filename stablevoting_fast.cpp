@@ -121,16 +121,15 @@ int main(){
     SVFast solver_all(T_all);
     solver_all.reset_epoch(W_all_base);
 
-    uint64_t full_mask = (T_all.N == 64 ? ~0ull : ((1ull << T_all.N) - 1ull));
-    int base_winner = solver_all.solve_winner(full_mask);
+    int base_winner = solver_all.solve_winner(T_all.full_mask);
     vector<int> base_elim;
-    solver_all.reconstruct(full_mask, base_winner, base_elim);
+    solver_all.reconstruct(T_all.full_mask, base_winner, base_elim);
 
     // Print baseline summary
     cout << "Clause: ";
     copy(base.begin(), base.end(), ostream_iterator<string>(cout, " ")); cout << '\n';
     cout << "Baseline winner: " << (base_winner>=0? T_all.names[base_winner] : string("None")) << '\n';
-    cout << "Baseline elim order: " << get_elim_order_string(base_elim, T_all, popcount64(full_mask)) << "\n\n";
+    cout << "Baseline elim order: " << get_elim_order_string(base_elim, T_all) << "\n\n";
 
     // print_graph_edges(T_all, W);              // list with margins
     // print_margin_matrix(T_all, W);            // NxN margin table
@@ -170,8 +169,7 @@ int main(){
         for (size_t si=0; si<T_sat.size(); ++si){
             auto &T = T_sat[si]; auto &S = sol_sat[si];
             S.reset_epoch(Wperm);
-            uint64_t full = (T.N==64?~0ull:((1ull<<T.N)-1ull));
-            int w = S.solve_winner(full);
+            int w = S.solve_winner(T.full_mask);
             if (w<0 || T.names[w] != "C") { ++all_failures; success = false; }
             if (w<0) {
                 cerr << "ERROR ERROR: Unable to find winner in graph for SAT clause: ";
@@ -186,8 +184,7 @@ int main(){
         for (size_t ui=0; ui<T_unsat.size(); ++ui){
             auto &T = T_unsat[ui]; auto &S = sol_uns[ui];
             S.reset_epoch(Wperm);
-            uint64_t full = (T.N==64?~0ull:((1ull<<T.N)-1ull));
-            int w = S.solve_winner(full);
+            int w = S.solve_winner(T.full_mask);
             if (w>=0 && T.names[w] == "C") { ++all_failures; success = false; }
             if (w<0 && !may_fail) {
                 cerr << "ERROR ERROR: Unable to find winner in graph for UNSAT clause: ";
@@ -211,18 +208,15 @@ int main(){
                 auto& S = sol_sat[si];
                 S.reset_epoch(Wperm);
 
-                // Full bitmask of active nodes for this template
-                uint64_t full = (T.N == 64 ? ~0ull : ((1ull << T.N) - 1ull));
-
                 // Solve and reconstruct elimination path
-                int w = S.solve_winner(full);
+                int w = S.solve_winner(T.full_mask);// Full bitmask of active nodes for this template
                 vector<int> elim;
-                S.reconstruct(full, w, elim);
+                S.reconstruct(T.full_mask, w, elim);
 
                 // clause set, winner, elimination order
                 cout << "  [" << si << "] " << join_clauses(sat_sets[si]) << "\n";
                 cout << "     winner=" << (w >= 0 ? T.names[w] : string("None"));
-                cout << "     elim=" << get_elim_order_string(elim, T, popcount64(full)) << "\n";
+                cout << "     elim=" << get_elim_order_string(elim, T) << "\n";
             }
 
             // ---- Print UNSAT cases: winner, decisive edge, and full elimination order ----
@@ -232,16 +226,16 @@ int main(){
                 auto& S = sol_uns[ui];
                 S.reset_epoch(Wperm);
 
-                uint64_t full = (T.N == 64 ? ~0ull : ((1ull << T.N) - 1ull));
-                int w = S.solve_winner(full);
+                // Solve and reconstruct elimination path
+                int w = S.solve_winner(T.full_mask);
+
                 // clause set, winner, elimination order
                 cout << "  [" << ui << "] " << join_clauses(unsat_sets[ui]) << "\n";
                 cout << "     winner=" << (w >= 0 ? T.names[w] : string("None"));
                 if(w>=0){
                     vector<int> elim;
-                    S.reconstruct(full, w, elim);
-
-                    cout << "     elim=" << get_elim_order_string(elim, T, popcount64(full));
+                    S.reconstruct(T.full_mask, w, elim);
+                    cout << "     elim=" << get_elim_order_string(elim, T);
                 }
                 cout << "\n";
             }

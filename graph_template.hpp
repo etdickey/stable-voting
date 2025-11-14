@@ -30,6 +30,7 @@ struct GraphTemplate {
     vector<int16_t> off;    // valid only when dir[u,v]==1
 
     uint64_t tf_mask = 0;   // bitmask of all Ti and Fi
+    uint64_t full_mask = 0; // all nodes (C, L, T, F, X)
 
     AI int IDX(int u,int v) const { return u*N + v; }
 
