@@ -226,7 +226,6 @@ struct SVFast {
         memo_epoch[key] = EPOCH; memo_winner[key] = -1; return -1;
     }
 
-    //TODO: VALIDATE!!!
     //---------------------------------SOLVER 2---------------------------------
     // NEW small helpers for constrained rule:
     AI size_t tf_state_index(uint64_t mask, int tf_left) const {
