@@ -284,10 +284,27 @@ struct SVFast {
 
 
 
-
-
-    //new 3
+    // RULE: 0 = standard SV, 1 = TF-prioritized
+    // TF_MASK: already loaded from G.tf_mask in constructor
     AI void reconstruct(uint64_t mask, int WN, vector<int>& elim) {
+        switch (RULE) {
+            case 0: reconstruct_standard(mask, WN, elim); break;
+            case 1: {
+                uint64_t tf_active = mask & TF_MASK;
+                int tf_total = popcount64(tf_active);
+                int must_eliminate = tf_total / 2;  // your “eliminate n/2 TF nodes first” rule
+                reconstruct_prioritized(mask, WN, elim, TF_MASK, must_eliminate);
+                break;
+            }
+            default:
+                cerr << "WARN WARN: reconstruct called with unknown RULE = " << RULE << endl;
+                elim.clear();
+                break;
+        }
+    }
+
+    //solve_winner_standard, RULE==0
+    AI void reconstruct_standard(uint64_t mask, int WN, vector<int>& elim) {
         elim.clear();
         if (popcount64(mask) == 1) return;
 
@@ -311,10 +328,63 @@ struct SVFast {
             }
 
             if (!progressed){
-                if(RULE != 1)
-                    cerr << "WARN WARN: Reconstruction failed" << endl;
+                cerr << "WARN WARN: Reconstruction failed" << endl;
                 return; // no consistent step found (shouldn't happen if WN is valid)
             }
         }
     }
+
+    // Reconstruction for prioritized rule (RULE == 1)
+    // priority_mask = TF_MASK; tf_left = how many priority nodes must still be eliminated
+    AI void reconstruct_prioritized(uint64_t mask, int WN, vector<int>& elim,
+                                    uint64_t priority_mask, int tf_left){
+        elim.clear();
+        if (popcount64(mask) == 1) return;
+
+        // If the constraint is already satisfied, just fall back to standard reconstruction
+        if (tf_left == 0) { reconstruct_standard(mask, WN, elim); return; }
+
+        while (true) {
+            bool progressed = false;
+
+            for (const auto& e : edges_sorted) {
+                int A = e.A, B = e.B, m = e.m;
+                if (A != WN || ((mask >> A) & 1ull) == 0 || ((mask >> B) & 1ull) == 0) continue;
+
+                bool B_is_priority = ((priority_mask >> B) & 1ull) != 0;
+                // tf_left is modified below
+                if (tf_left > 0 && !B_is_priority) continue;  // can't eliminate non-TF while constraint active
+
+                if (m > 0 || (m <= 0 && !b_defeats_a(B, A, mask))) {
+                    uint64_t nmask = mask & ~(1ull << B);
+                    int next_tf_left = tf_left - (B_is_priority ? 1 : 0);
+
+                    if (solve_winner_prioritized(nmask, priority_mask, next_tf_left) == WN) {
+                        elim.push_back(B);
+                        mask = nmask;
+                        tf_left = next_tf_left;
+                        progressed = true;
+
+                        if (popcount64(mask) == 1) return;
+                        if (tf_left == 0) {
+                            // From here on, prefix constraint is satisfied: switch to standard.
+                            vector<int> tail;
+                            reconstruct_standard(mask, WN, tail);
+                            elim.insert(elim.end(), tail.begin(), tail.end());
+                            return;
+                        }
+                        break;  // restart from strongest edge on reduced mask
+                    }
+                }
+            }
+
+            if (!progressed) {
+                // *** IMPORTANT CHANGE ***
+                // For RULE = 1, failing to reconstruct is OK.
+                // Do NOT warn—just return with what we have.
+                return;
+            }
+        }
+    }
+
 };
