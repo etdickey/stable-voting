@@ -110,6 +110,8 @@ int main(){
     for (auto &v: unsat_sets) T_unsat.push_back(build_template_from_strings(v));
     GraphTemplate T_all = build_template_from_strings(base); // full 4-clause set
 
+
+    // ===============================BASE CLAUSE===============================
     // Prepare baseline triple (winner, order, edge) for T_all
     vector<int> Wbase; fibonacci_series(NUM_GROUPS, STARTING_WEIGHT, STARTING_WEIGHT*2, Wbase);
     vector<int> W = Wbase; sort(W.begin(), W.end()); // ensure lexicographic start for next_permutation
@@ -118,24 +120,24 @@ int main(){
     int W_all_base[NUM_GROUPS]; for (int i=0;i<NUM_GROUPS;++i) W_all_base[i]=Wbase[i];
     SVFast solver_all(T_all);
     solver_all.reset_epoch(W_all_base);
-    int base_winner = solver_all.solve_winner((T_all.N==64?~0ull:((1ull<<T_all.N)-1ull)));
+
+    uint64_t full_mask = (T_all.N == 64 ? ~0ull : ((1ull << T_all.N) - 1ull));
+    int base_winner = solver_all.solve_winner(full_mask);
     vector<int> base_elim;
-    solver_all.reconstruct((T_all.N==64?~0ull:((1ull<<T_all.N)-1ull)), base_winner, base_elim);
+    solver_all.reconstruct(full_mask, base_winner, base_elim);
 
     // Print baseline summary
     cout << "Clause: ";
     copy(base.begin(), base.end(), ostream_iterator<string>(cout, " ")); cout << '\n';
     cout << "Baseline winner: " << (base_winner>=0? T_all.names[base_winner] : string("None")) << '\n';
-    cout << "Baseline elim order: [";
-    for (size_t i=0;i<base_elim.size();++i){
-        if(i) cout<<", ";
-        cout<<T_all.names[base_elim[i]];
-    }
-    cout<<"]\n\n";
+    cout << "Baseline elim order: " << get_elim_order_string(base_elim, T_all, popcount64(full_mask)) << "\n\n";
+
     // print_graph_edges(T_all, W);              // list with margins
     // print_margin_matrix(T_all, W);            // NxN margin table
     // print_graph_dot(T_all, W);
     // print_edges_by_weight(T_all, W);
+    // ============================END BASE CLAUSE==============================
+
 
     // Stats
     const size_t total_clause_runs = sat_sets.size() + unsat_sets.size();
@@ -220,9 +222,7 @@ int main(){
                 // clause set, winner, elimination order
                 cout << "  [" << si << "] " << join_clauses(sat_sets[si]) << "\n";
                 cout << "     winner=" << (w >= 0 ? T.names[w] : string("None"));
-                cout << "     elim=[";
-                for (size_t i = 0; i < elim.size(); ++i) { if (i) cout << ','; cout << T.names[elim[i]]; }
-                cout << "]\n";
+                cout << "     elim=" << get_elim_order_string(elim, T, popcount64(full)) << "\n";
             }
 
             // ---- Print UNSAT cases: winner, decisive edge, and full elimination order ----
@@ -241,9 +241,7 @@ int main(){
                     vector<int> elim;
                     S.reconstruct(full, w, elim);
 
-                    cout << "     elim=[";
-                    for (size_t i = 0; i < elim.size(); ++i) { if (i) cout << ','; cout << T.names[elim[i]]; }
-                    cout << "]";
+                    cout << "     elim=" << get_elim_order_string(elim, T, popcount64(full));
                 }
                 cout << "\n";
             }
