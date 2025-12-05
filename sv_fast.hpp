@@ -250,7 +250,7 @@ struct SVFast {
             int A = e.A, B = e.B, m = e.m;
             if (((mask >> A) & 1ull) == 0 || ((mask >> B) & 1ull) == 0) continue; // edge not in subtournament
 
-            if (m > 0 || (m <= 0 && !b_defeats_a(B, A, mask))) {
+            if (!CHECK_DEFEATS || (m > 0 || (m <= 0 && !b_defeats_a(B, A, mask)))) {
                 uint64_t nmask = mask & ~(1ull << B); // eliminate B
 
                 // if(DEBUG_STANDARD) cout << space << G.names[A] << "->" << G.names[B] << " START\n";
@@ -317,7 +317,7 @@ struct SVFast {
             // tf_left > 0 is already true by the first function check
             if (!B_is_priority) continue; //skip if B not in priority list and still have to select some from that set
 
-            if (m > 0 || (m <= 0 && !b_defeats_a(B, A, mask))) {
+            if (!CHECK_DEFEATS || (m > 0 || (m <= 0 && !b_defeats_a(B, A, mask)))) {
                 uint64_t nmask = mask & ~(1ull << B); // eliminate B
                 int next_tf_left = tf_left - (B_is_priority ? 1 : 0);//check is not necessary, continued above
 
@@ -384,7 +384,7 @@ struct SVFast {
                 int A = e.A, B = e.B, m = e.m;
                 if (A != WN || ((mask >> A) & 1ull) == 0 || ((mask >> B) & 1ull) == 0) continue;
 
-                if (m > 0 || (m <= 0 && !b_defeats_a(B, A, mask))) {
+                if (!CHECK_DEFEATS || (m > 0 || (m <= 0 && !b_defeats_a(B, A, mask)))) {
                     uint64_t nmask = mask & ~(1ull << B);
                     if (solve_winner_standard(nmask) == WN) {
                         elim.push_back(B);
@@ -424,7 +424,7 @@ struct SVFast {
                 // tf_left is modified below
                 if (tf_left > 0 && !B_is_priority) continue;  // can't eliminate non-TF while constraint active
 
-                if (m > 0 || (m <= 0 && !b_defeats_a(B, A, mask))) {
+                if (!CHECK_DEFEATS || (m > 0 || (m <= 0 && !b_defeats_a(B, A, mask)))) {
                     uint64_t nmask = mask & ~(1ull << B);
                     int next_tf_left = tf_left - (B_is_priority ? 1 : 0);
 
@@ -451,6 +451,7 @@ struct SVFast {
                 // *** IMPORTANT CHANGE ***
                 // For RULE = 1, failing to reconstruct is OK.
                 // Do NOT warn—just return with what we have.
+                if(!MAY_FAIL) cerr << "WARN WARN: Reconstruction failed" << endl;
                 return;
             }
         }
