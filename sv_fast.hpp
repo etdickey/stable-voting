@@ -304,8 +304,9 @@ struct SVFast {
 
         if (popcount64(mask) == 1) {// single survivor?
             int w = ctz64(mask);
-            memo_epoch_tf[key]  = EPOCH; memo_winner_tf[key] = w; return w;
+            memo_epoch_tf[key] = EPOCH; memo_winner_tf[key] = w; return w;
         }
+
 
         // Scan edges in global descending order; try the first valid one whose endpoints are active.
         for (const auto& e : edges_sorted) {
@@ -318,15 +319,25 @@ struct SVFast {
 
             if (m > 0 || (m <= 0 && !b_defeats_a(B, A, mask))) {
                 uint64_t nmask = mask & ~(1ull << B); // eliminate B
-                int next_tf_left = tf_left - (B_is_priority ? 1 : 0);
+                int next_tf_left = tf_left - (B_is_priority ? 1 : 0);//check is not necessary, continued above
 
+                // if(DEBUG_PRIORITIZED) cout << space << G.names[A] << "->" << G.names[B] << " START\n";
+                // if(DEBUG_PRIORITIZED) space += "| ";
                 int w = solve_winner_prioritized(nmask, priority_mask, next_tf_left);
+                // if(DEBUG_PRIORITIZED) space.resize(space.size() - 2);   // shrink indent on unwind
+
+                // string winnerName = (w >=0 ? G.names[w] : "NONE");
                 if (w == A) {
-                    memo_epoch_tf[key]  = EPOCH; memo_winner_tf[key] = w; return w;
+                    // if(DEBUG_PRIORITIZED) cout << space << G.names[A] << "->" << G.names[B] << " SUCCEEDED (" << winnerName << " won)\n";
+                    memo_epoch_tf[key] = EPOCH; memo_winner_tf[key] = w; return w;
                 }
+                // else if(DEBUG_PRIORITIZED) {
+                //     cout << space << G.names[A] << "->" << G.names[B] << " Failed (" << winnerName << " won)\n";
+                // }
             }
         }
 
+        // if(DEBUG_PRIORITIZED) cout << space << "returning NONE!!\n";
         memo_epoch_tf[key]  = EPOCH; memo_winner_tf[key] = -1; return -1;
     }
 
