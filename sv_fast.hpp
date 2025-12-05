@@ -2,6 +2,8 @@
 #pragma once
 
 #include <vector>
+#include <sstream>
+
 // self
 #include "graph_template.hpp"
 
@@ -20,18 +22,50 @@ struct SVFast {
     // Which SV rule to use?
     // 0 = Standard SV
     // 1 = Prioritized: eliminate n/2 TF nodes first
-    int RULE = 1;
+    static const int RULE = 1;
+    //-------choose SV or SSV-------
+    // true = Stable Voting
+    // false = Simple Stable Voting
+    static const bool CHECK_DEFEATS = false;
+    // If prioritized and SV (not simple), may fail to produce a winner
+    static const bool MAY_FAIL = (RULE == 1 && CHECK_DEFEATS == true);
     // Mask of T/F nodes (only needed if RULE == 1)
     uint64_t TF_MASK = 0;
     //-------choose solver end-------
+    static string static_config_string() {
+        ostringstream o;
+        o << "Rule: "
+          << (RULE==0 ? "Standard Stable Voting"
+                      : RULE==1 ? "TF-prioritized (eliminate half of TF first)"
+                                : "Unknown")
+          << ", Mode: " << (CHECK_DEFEATS ? "Stable Voting" : "Simple Stable Voting")
+          << ", MayFail: " << (MAY_FAIL ? "may fail to produce a winner" : "always produces a winner");
+
+        return o.str();
+    }
+    string config_string() const {
+        ostringstream o;
+        o << static_config_string();   // reuse the shared descriptive text
+        o << ", N=" << N;
+
+        if (RULE == 1) {
+            int tf = popcount64(TF_MASK);
+            o << ", TF_total=" << tf
+              << ", must_eliminate=" << (tf/2);
+        }
+
+        return o.str();
+    }
 
 
+
+    //----------------------ACTUAL SOLVER STUFF---------------------------------
     // Memo (winner only) using epoch-tag trick for O(1) clears
     vector<int> memo_winner;        // winner idx or -1 (none)
     vector<uint32_t> memo_epoch;    // epoch tag
     uint32_t EPOCH = 1;
 
-    // NEW: memo for constrained rule
+    // memo for constrained rule
     vector<int> memo_winner_tf;
     vector<uint32_t> memo_epoch_tf;
     int max_tf_state = 0;
