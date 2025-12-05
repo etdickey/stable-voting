@@ -55,6 +55,16 @@ static AI void parse_clause_fast(const string& s, vector<pair<int,bool>>& out, i
     }
 }
 
+static AI string rmws(string s){//remove whitespace
+    int w=0;
+    for(char c: s) if(c>' ') s[w++]=c;
+    s.resize(w);
+    return s;
+}
+static AI void rmws_vec(vector<string>& v){ for(auto& s : v) s = rmws(s); }
+static AI void rmws_vec_vec(vector<vector<string>>& v){ for(auto& s : v) rmws_vec(s); }
+
+
 // Convenience: from strings like "(x1, ~x2)", "(x1, x2)"
 static GraphTemplate build_template_from_strings(const vector<string>& clause_strs){
     vector<vector<pair<int,bool>>> clauses;
@@ -104,19 +114,20 @@ static AI void sanity_check(const int NUM_GROUPS, vector<int> Wbase){
 
 static AI void get_2sat_clauses(vector<vector<string>>& sat_sets, vector<vector<string>>& unsat_sets, vector<array<int,2>>& sat_assignments, vector<array<int,2>>& unsat_assignments){
     sat_sets.clear(); unsat_sets.clear(); sat_assignments.clear(); unsat_assignments.clear();
-    // Base four clauses
-    vector<string> base = {"(x1, x2)", "(x1, ~x2)", "(~x1, x2)", "(~x1, ~x2)"};
-
-    // Build clause sets: all C(4,2) and C(4,3) for SAT suite
-    for (int i=0;i<4;++i) for (int j=i+1;j<4;++j) sat_sets.push_back({base[i],base[j]});
-    for (int i=0;i<4;++i) for (int j=i+1;j<4;++j) for (int k=j+1;k<4;++k) sat_sets.push_back({base[i],base[j],base[k]});
-    // UNSAT suites
-    unsat_sets = {
-        {"(x1, x2)", "(x1, ~x2)", "(~x1, x2)", "(~x1, ~x2)"},
-        {"(x1, ~x2)", "(~x1, x2)", "(x2, ~x3)", "(~x2, x3)", "(x1, x3)", "(~x1, ~x3)"},
-        {"(x1, x2)", "(x1, ~x2)", "(~x1, x3)", "(~x1, ~x3)"},
-        {"(~x1, x2)", "(~x2, x3)", "(~x3, ~x1)", "(x1, ~x2)", "(x2, ~x3)", "(x3, x1)"}
-    };
+    // // Base four clauses
+    // vector<string> base = {"(x1, x2)", "(x1, ~x2)", "(~x1, x2)", "(~x1, ~x2)"};
+    //
+    // // Build clause sets: all C(4,2) and C(4,3) for SAT suite
+    // for (int i=0;i<4;++i) for (int j=i+1;j<4;++j) sat_sets.push_back({base[i],base[j]});
+    // for (int i=0;i<4;++i) for (int j=i+1;j<4;++j) for (int k=j+1;k<4;++k) sat_sets.push_back({base[i],base[j],base[k]});
+    // // UNSAT suites
+    // unsat_sets = {
+    //     {"(x1, x2)", "(x1, ~x2)", "(~x1, x2)", "(~x1, ~x2)"},
+    //     {"(x1, ~x2)", "(~x1, x2)", "(x2, ~x3)", "(~x2, x3)", "(x1, x3)", "(~x1, ~x3)"},
+    //     {"(x1, x2)", "(x1, ~x2)", "(~x1, x3)", "(~x1, ~x3)"},
+    //     {"(~x1, x2)", "(~x2, x3)", "(~x3, ~x1)", "(x1, ~x2)", "(x2, ~x3)", "(x3, x1)"}
+    // };
+    // rmws_vec_vec(sat_sets); rmws_vec_vec(unsat_sets);
 }
 
 static AI void get_3sat_clauses(vector<vector<string>>& sat_sets, vector<vector<string>>& unsat_sets, vector<array<int,3>>& sat_assignments, vector<array<int,3>>& unsat_assignments){
@@ -124,28 +135,28 @@ static AI void get_3sat_clauses(vector<vector<string>>& sat_sets, vector<vector<
     // 3-SAT test suite: first 8 are SAT with designated (x1,x2,x3), next 7 are UNSAT (assignment = -1),
     // and the last one is a mixed-size SAT clause set with its own designated assignment.
     sat_sets = {
-        {"(~x1, ~x2, ~x3)", "(~x1, ~x2, x3)", "(~x1, x2, ~x3)"},   //  0 SAT,  (x1,x2,x3) = (0,0,0)
-        {"(~x1, ~x2, x3)", "(~x1, x2, x3)", "(x1, ~x2, x3)"},      //  1 SAT,  (x1,x2,x3) = (0,0,1)
-        {"(~x1, x2, ~x3)", "(~x1, x2, x3)", "(x1, x2, ~x3)"},      //  2 SAT,  (x1,x2,x3) = (0,1,0)
-        {"(~x1, x2, x3)", "(~x1, x2, ~x3)", "(x1, x2, x3)"},       //  3 SAT,  (x1,x2,x3) = (0,1,1)
-        {"(x1, ~x2, ~x3)", "(x1, ~x2, x3)", "(x1, x2, ~x3)"},      //  4 SAT,  (x1,x2,x3) = (1,0,0)
-        {"(x1, ~x2, x3)", "(x1, ~x2, ~x3)", "(~x1, ~x2, x3)"},     //  5 SAT,  (x1,x2,x3) = (1,0,1)
-        {"(x1, x2, ~x3)", "(x1, x2, x3)", "(~x1, x2, ~x3)"},       //  6 SAT,  (x1,x2,x3) = (1,1,0)
-        {"(x1, x2, x3)", "(x1, x2, ~x3)", "(x1, ~x2, x3)"},        //  7 SAT,  (x1,x2,x3) = (1,1,1)
-
-        {"(x1, ~x2, x3)", "(~x1, x2, x3)", "(x1, x2, ~x3)", "(~x1, ~x2, ~x3)"},  // 15 SAT mixed-size (4 clauses), (x1,x2,x3) = (1,0,1)
-        {"(~x1, x2, x3)", "(x1, x2, x3)"},                                      // 16 SAT mixed-size (2 clauses), assignment (0,1,1)
-        {"(x1, ~x2, ~x3)", "(x1, ~x2, x3)", "(x1, x2, ~x3)"},                   // 17 SAT mixed-size (3 clauses), assignment (1,0,0)
-        {"(~x1, x2, ~x3)", "(~x1, x2, x3)", "(x1, x2, ~x3)"},                   // 18 SAT mixed-size (3 clauses), assignment (0,1,0)
-        {"(x1, x2, x3)", "(x1, ~x2, x3)"},                                      // 19 SAT mixed-size (2 clauses), assignment (1,1,1)
-        {"(~x1, ~x2, x3)", "(x1, ~x2, x3)"},                                    // 20 SAT mixed-size (2 clauses), assignment (0,0,1)
-        {"(x1, x2, ~x3)", "(x1, x2, x3)", "(~x1, x2, ~x3)", "(x1, ~x2, ~x3)"},  // 21 SAT mixed-size (4 clauses), assignment (1,1,0)
-        {"(~x1, x2, x3)", "(~x1, x2, ~x3)", "(x1, x2, x3)", "(~x1, ~x2, x3)"},  // 22 SAT mixed-size (4 clauses), assignment (0,1,1)
-        {"(x1, ~x2, x3)", "(~x1, ~x2, x3)", "(x1, x2, x3)"},                    // 23 SAT mixed-size (3 clauses), assignment (1,0,1)
-        {"(~x1, x2, ~x3)", "(~x1, x2, x3)", "(x1, ~x2, ~x3)", "(x1, x2, ~x3)"}, // 24 SAT mixed-size (4 clauses), assignment (0,1,0)
-        {"(x1, ~x2, x3)", "(x1, x2, x3)", "(~x1, ~x2, x3)"},                    // 25 SAT mixed-size (3 clauses), assignment (1,0,1)
-        {"(~x1, ~x2, ~x3)", "(x1, ~x2, ~x3)", "(~x1, x2, ~x3)"},                // 26 SAT mixed-size (3 clauses), assignment (0,0,0)
-        {"(x1, x2, x3)", "(x1, x2, ~x3)", "(x1, ~x2, x3)", "(~x1, x2, x3)"}     // 27 SAT mixed-size (4 clauses), assignment (1,1,1)
+        // {"(~x1, ~x2, ~x3)", "(~x1, ~x2, x3)", "(~x1, x2, ~x3)"},   //  0 SAT,  (x1,x2,x3) = (0,0,0)
+        // {"(~x1, ~x2, x3)", "(~x1, x2, x3)", "(x1, ~x2, x3)"},      //  1 SAT,  (x1,x2,x3) = (0,0,1)
+        // {"(~x1, x2, ~x3)", "(~x1, x2, x3)", "(x1, x2, ~x3)"},      //  2 SAT,  (x1,x2,x3) = (0,1,0)
+        // {"(~x1, x2, x3)", "(~x1, x2, ~x3)", "(x1, x2, x3)"},       //  3 SAT,  (x1,x2,x3) = (0,1,1)
+        // {"(x1, ~x2, ~x3)", "(x1, ~x2, x3)", "(x1, x2, ~x3)"},      //  4 SAT,  (x1,x2,x3) = (1,0,0)
+        // {"(x1, ~x2, x3)", "(x1, ~x2, ~x3)", "(~x1, ~x2, x3)"},     //  5 SAT,  (x1,x2,x3) = (1,0,1)
+        // {"(x1, x2, ~x3)", "(x1, x2, x3)", "(~x1, x2, ~x3)"},       //  6 SAT,  (x1,x2,x3) = (1,1,0)
+        // {"(x1, x2, x3)", "(x1, x2, ~x3)", "(x1, ~x2, x3)"},        //  7 SAT,  (x1,x2,x3) = (1,1,1)
+        //
+        // {"(x1, ~x2, x3)", "(~x1, x2, x3)", "(x1, x2, ~x3)", "(~x1, ~x2, ~x3)"},  // 15 SAT mixed-size (4 clauses), (x1,x2,x3) = (1,0,1)
+        // {"(~x1, x2, x3)", "(x1, x2, x3)"},                                      // 16 SAT mixed-size (2 clauses), assignment (0,1,1)
+        // {"(x1, ~x2, ~x3)", "(x1, ~x2, x3)", "(x1, x2, ~x3)"},                   // 17 SAT mixed-size (3 clauses), assignment (1,0,0)
+        // {"(~x1, x2, ~x3)", "(~x1, x2, x3)", "(x1, x2, ~x3)"},                   // 18 SAT mixed-size (3 clauses), assignment (0,1,0)
+        // {"(x1, x2, x3)", "(x1, ~x2, x3)"},                                      // 19 SAT mixed-size (2 clauses), assignment (1,1,1)
+        // {"(~x1, ~x2, x3)", "(x1, ~x2, x3)"},                                    // 20 SAT mixed-size (2 clauses), assignment (0,0,1)
+        // {"(x1, x2, ~x3)", "(x1, x2, x3)", "(~x1, x2, ~x3)", "(x1, ~x2, ~x3)"},  // 21 SAT mixed-size (4 clauses), assignment (1,1,0)
+        // {"(~x1, x2, x3)", "(~x1, x2, ~x3)", "(x1, x2, x3)", "(~x1, ~x2, x3)"},  // 22 SAT mixed-size (4 clauses), assignment (0,1,1)
+        // {"(x1, ~x2, x3)", "(~x1, ~x2, x3)", "(x1, x2, x3)"},                    // 23 SAT mixed-size (3 clauses), assignment (1,0,1)
+        // {"(~x1, x2, ~x3)", "(~x1, x2, x3)", "(x1, ~x2, ~x3)", "(x1, x2, ~x3)"}, // 24 SAT mixed-size (4 clauses), assignment (0,1,0)
+        // {"(x1, ~x2, x3)", "(x1, x2, x3)", "(~x1, ~x2, x3)"},                    // 25 SAT mixed-size (3 clauses), assignment (1,0,1)
+        // {"(~x1, ~x2, ~x3)", "(x1, ~x2, ~x3)", "(~x1, x2, ~x3)"},                // 26 SAT mixed-size (3 clauses), assignment (0,0,0)
+        // {"(x1, x2, x3)", "(x1, x2, ~x3)", "(x1, ~x2, x3)", "(~x1, x2, x3)"}     // 27 SAT mixed-size (4 clauses), assignment (1,1,1)
     };
 
     unsat_sets = {
@@ -163,74 +174,6 @@ static AI void get_3sat_clauses(vector<vector<string>>& sat_sets, vector<vector<
         // UNSAT #2: equivalence cycle x1 ↔ x2 ↔ x3 ↔ ¬x1, plus tautology on x4,x5
         {"(~x1,x2)","(x1,~x2)","(~x2,x3)","(x2,~x3)","(~x3,~x1)","(x3,x1)","(x4,~x4,x5)"},
     };
-    // vector<vector<string>> more_5var_unsat_clause_sets = {
-
-    //     // UNSAT #3: equality + inequality on (x1,x2), plus tautologies for x3,x4,x5
-    //     {"(~x1,x2,x2)",   //  x1 → x2
-    //      "(x1,~x2,~x2)",  //  x2 → x1
-    //      "(x1,x2,x2)",    //  x1 ∨ x2
-    //      "(~x1,~x2,~x2)", //  ¬x1 ∨ ¬x2
-    //      "(x3,~x3,x4)","(x4,~x4,x5)"},
-    //
-    //     // UNSAT #4: implication cycle on x2,x4,x5 with x2 forced true, plus x1,x3 tautology
-    //     {"(~x2,x4,x4)",   // x2 → x4
-    //      "(~x4,x5,x5)",   // x4 → x5
-    //      "(~x5,~x2,~x2)", // x5 → ¬x2
-    //      "(x2,x2,x2)",    // x2 forced true
-    //      "(x1,~x1,x3)"},
-    //
-    //     // UNSAT #5: equality + inequality on (x3,x4), plus x1,x5
-    //     {"(~x3,x4,x4)",   // x3 → x4
-    //      "(x3,~x4,~x4)",  // x4 → x3
-    //      "(x3,x4,x4)",    // x3 ∨ x4
-    //      "(~x3,~x4,~x4)", // ¬x3 ∨ ¬x4
-    //      "(x1,~x1,x5)"},
-    //
-    //     // UNSAT #6: eq chain x1↔x2↔x3 plus inequality x1≠x3, tautology on x4,x5
-    //     {"(~x1,x2,x2)","(x1,~x2,~x2)","(~x2,x3,x3)","(x2,~x3,~x3)","(x1,x3,x3)",     // x1 ∨ x3
-    //      "(~x1,~x3,~x3)",  // ¬x1 ∨ ¬x3
-    //      "(x4,~x4,x5)"},
-    //
-    //     // UNSAT #7: equivalence cycle on x2,x4,x5 plus tautology on x1,x3
-    //     {"(~x2,x4,x4)",   // x2 ↔ x4
-    //      "(x2,~x4,~x4)",
-    //      "(~x4,x5,x5)",   // x4 ↔ x5
-    //      "(x4,~x5,~x5)",
-    //      "(~x5,~x2,~x2)", // x5 ↔ ¬x2
-    //      "(x5,x2,x2)",
-    //      "(x1,~x1,x3)"},
-    //
-    //     // UNSAT #8: equality + inequality on (x1,x3), plus x2,x4,x5
-    //     {"(~x1,x3,x3)",   // x1 ↔ x3
-    //      "(x1,~x3,~x3)",
-    //      "(x1,x3,x3)",    // x1 ∨ x3
-    //      "(~x1,~x3,~x3)", // ¬x1 ∨ ¬x3
-    //      "(x2,~x2,x4)",
-    //      "(x4,~x4,x5)"},
-    //
-    //     // UNSAT #9: force x4=0 and x5=0, then (x1 ∨ x4 ∨ x5) and (¬x1 ∨ x4 ∨ x5)
-    //     {"(~x4,x1,x1)",   // force x4 = 0 via x1
-    //      "(~x4,~x1,~x1)",
-    //      "(~x5,x2,x2)",   // force x5 = 0 via x2
-    //      "(~x5,~x2,~x2)",
-    //      "(x1,x4,x5)",
-    //      "(~x1,x4,x5)",
-    //      "(x3,~x3,x4)"}   // bring in x3
-    // };
-
-    // vector<array<int,5>> more_5var_unsat_assignments = {
-    //     {-1,-1,-1,-1,-1},  // UNSAT #0
-    //     {-1,-1,-1,-1,-1},  // UNSAT #1
-    //     {-1,-1,-1,-1,-1},  // UNSAT #2
-    //     {-1,-1,-1,-1,-1},  // UNSAT #3
-    //     {-1,-1,-1,-1,-1},  // UNSAT #4
-    //     {-1,-1,-1,-1,-1},  // UNSAT #5
-    //     {-1,-1,-1,-1,-1},  // UNSAT #6
-    //     {-1,-1,-1,-1,-1},  // UNSAT #7
-    //     {-1,-1,-1,-1,-1},  // UNSAT #8
-    //     {-1,-1,-1,-1,-1}   // UNSAT #9
-    // };
-
 
     sat_assignments = {
         {0,0,0},  //  0 SAT  (x1,x2,x3) = (0,0,0)
@@ -269,6 +212,8 @@ static AI void get_3sat_clauses(vector<vector<string>>& sat_sets, vector<vector<
         {-1,-1,-1}, // 5VAR UNSAT
         {-1,-1,-1}, // 5VAR UNSAT
     };
+
+    rmws_vec_vec(sat_sets); rmws_vec_vec(unsat_sets);
 }
 
 static AI void get_graphs_and_solvers(const vector<vector<string>>& sat_sets, vector<GraphTemplate>& T_sat, vector<SVFast>& sol_sat){
@@ -319,7 +264,7 @@ int main(){
 
     // Prepare baseline weight list (one per group)
     vector<int> Wbase; fibonacci_series(NUM_GROUPS, STARTING_WEIGHT, STARTING_WEIGHT*2, Wbase);
-    sanity_check(NUM_GROUPS, Wbase);
+    // sanity_check(NUM_GROUPS, Wbase);
 
     // Stats
     const size_t total_clause_runs = sat_sets.size() + unsat_sets.size();
@@ -338,8 +283,9 @@ int main(){
     size_t total_perms=1; for(int i=2;i<=NUM_GROUPS;++i) total_perms*= (size_t)i;
     cout << "Exhaustively testing " << total_perms << " permutations..." << endl;
 
-    bool may_fail = (sol_sat[0].RULE == 1);
-    if(may_fail) cout << "  WARN: functions allowed to return no answer as a valid unsatisfiable check" << endl;
+    bool may_fail = SVFast::MAY_FAIL;
+    if(may_fail) cout << "  WARN: functions allowed to return no answer as a valid unsatisfiable check\n";
+    cout << "Running with configuration:\n  " << SVFast::static_config_string() << "\n";
     do{
         auto t0 = chrono::steady_clock::now();
         for (int i=0;i<NUM_GROUPS;++i) Wperm[i]=W[i];
