@@ -72,6 +72,13 @@ struct SVFast {
 
     struct Match { int A,B,m; };
     vector<Match> edges_sorted;
+    string matchStr(const Match& m){
+        ostringstream oss;
+        oss << "{A (" << m.A << "): " << G.names[m.A]
+            << ", B (" << m.B << "): " << G.names[m.B]
+            << ", m: " << m.m << "}";
+        return oss.str();
+    }
 
     // Per-permutation realized margins and sorted adjacency
     bool prepared = false;
