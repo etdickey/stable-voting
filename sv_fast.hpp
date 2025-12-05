@@ -216,7 +216,7 @@ struct SVFast {
     }
 
 
-
+    // const bool DEBUG_STANDARD = false;
     int solve_winner_standard(uint64_t mask) {
         // is the current graph permutation the one where memo_winner was set?
         size_t key = (size_t)mask;
@@ -227,20 +227,23 @@ struct SVFast {
             memo_epoch[key]=EPOCH; memo_winner[key]=w; return w;
         }
 
-        // vector<string> ansS = {"F1", "X2", "X1", "T1", "L4", "L3", "L2", "F2", "L1", "T2", "C"};
-        //                     // ['F1', 'X2', 'X1', 'T1', 'L4', 'L3', 'L2', 'F2', 'L1', 'T2']
-        // vector<int> ans(N);
-        // for(int i=0; i<N; i++){
-        //     ans[i] = find(G.names.begin(), G.names.end(), ansS[i]) - G.names.begin();
-        //     // if(find(G.names.begin(), G.names.end(), ansS[i]) == G.names.end()) cout << "Couldn't find this guy: \'" << ansS[i] << "\'" << endl;
-        //     // else cout << "Found \'" << ansS[i] << "\' at " << ans[i] << endl;
+        // if(DEBUG_STANDARD){
+        //     // vector<string> ansS = {"F1", "X2", "X1", "T1", "L4", "L3", "L2", "F2", "L1", "T2", "C"};
+        //     //                     // ['F1', 'X2', 'X1', 'T1', 'L4', 'L3', 'L2', 'F2', 'L1', 'T2']
+        //     // vector<int> ans(N);
+        //     // for(int i=0; i<N; i++){
+        //     //     ans[i] = find(G.names.begin(), G.names.end(), ansS[i]) - G.names.begin();
+        //     //     // if(find(G.names.begin(), G.names.end(), ansS[i]) == G.names.end()) cout << "Couldn't find this guy: \'" << ansS[i] << "\'" << endl;
+        //     //     // else cout << "Found \'" << ansS[i] << "\' at " << ans[i] << endl;
+        //     // }
+        //     int tmpidx = popcount64(mask);
+        //     cout << "[SV]Curr cand left: " << tmpidx << " [";
+        //     for (int i = 0; i < N; ++i) if (mask & (1ull << i)) cout << G.names[i] << ", ";
+        //     cout << "], curr removed: [";
+        //     for (int i = 0; i < N; ++i) if (!(mask & (1ull << i))) cout << G.names[i] << ", ";
+        //     cout << "]\n";
+        //     // ", winner should be:" << ans[N - tmpidx] << ": " << ansS[N - tmpidx] << '\n';
         // }
-        // int tmpidx = popcount64(mask);
-        // cout << "Curr cand left: " << tmpidx << " [";
-        // for (int i = 0; i < N; ++i) if (mask & (1ull << i)) cout << G.names[i] << ", ";
-        // cout << "], curr removed: [";
-        // for (int i = 0; i < N; ++i) if (!(mask & (1ull << i))) cout << G.names[i] << ", ";
-        // cout << "], winner should be:" << ans[N - tmpidx] << ": " << ansS[N - tmpidx] << '\n';
 
         // Scan edges in global descending order; try the first valid one whose endpoints are active.
         for (const auto& e : edges_sorted) {
@@ -249,21 +252,22 @@ struct SVFast {
 
             if (m > 0 || (m <= 0 && !b_defeats_a(B, A, mask))) {
                 uint64_t nmask = mask & ~(1ull << B); // eliminate B
-                // cout << space << G.names[A] << "->" << G.names[B] << " START\n";
-                // space += "| ";
+
+                // if(DEBUG_STANDARD) cout << space << G.names[A] << "->" << G.names[B] << " START\n";
+                // if(DEBUG_STANDARD) space += "| ";
                 int w = solve_winner_standard(nmask);
-                // space = space.substr(0, space.length() - 2);
+                // if(DEBUG_STANDARD) space.resize(space.size() - 2);   // shrink indent on unwind
 
                 if (w == A) {
-                    // cout << space << G.names[A] << "->" << G.names[B] << " SUCCEEDED (" << G.names[w] << " won)\n";
+                    // if(DEBUG_STANDARD) cout << space << G.names[A] << "->" << G.names[B] << " SUCCEEDED (" << G.names[w] << " won)\n";
                     memo_epoch[key] = EPOCH; memo_winner[key] = w; return w;
                 }
-                // else{
-                //     cout << space << G.names[A] << "->" << G.names[B] << " Failed (" << G.names[w] << " won)\n";
-                //
+                // else if(DEBUG_STANDARD) {
+                    // cout << space << G.names[A] << "->" << G.names[B] << " Failed (" << G.names[w] << " won)\n";
                 // }
             }
         }
+        // if(DEBUG_STANDARD) cout << space << "returning NONE!!\n";
         memo_epoch[key] = EPOCH; memo_winner[key] = -1; return -1;
     }
 
@@ -275,11 +279,24 @@ struct SVFast {
         return size_t(tf_left) * base + size_t(mask);
     }
 
+
+    // string space = "- ";
+    // const bool DEBUG_PRIORITIZED = false;
     // Core constrained solver (only *extra* logic is tf_left & tf_mask)
     int solve_winner_prioritized(uint64_t mask, uint64_t priority_mask, int tf_left){
         // If we’ve already satisfied the “eliminate K TF nodes first” requirement,
         // the rest is just standard SV.
-        if (tf_left == 0) return solve_winner_standard(mask);
+        if (tf_left == 0){
+            // if(DEBUG_PRIORITIZED){
+            //     // int tmpidx = popcount64(mask);
+            //     // cout << "[PER-SV]Curr cand left: " << tmpidx << " [";
+            //     // for (int i = 0; i < N; ++i) if (mask & (1ull << i)) cout << G.names[i] << ", ";
+            //     // cout << "], curr removed: [";
+            //     // for (int i = 0; i < N; ++i) if (!(mask & (1ull << i))) cout << G.names[i] << ", ";
+            //     // cout << "]\n";
+            // }
+            return solve_winner_standard(mask);
+        }
 
         // is the current graph permutation the one where memo_winner was set?
         size_t key = tf_state_index(mask, tf_left);
