@@ -236,6 +236,7 @@ def edge_counts_summary(categories: Dict[str, List[Tuple[str, str]]]) -> Dict[st
 
 #Main
 if __name__ == "__main__":
+    default_clause = ["(x1, x2, x3)","(~x1, x2, x3)","(x1, ~x2, x3)","(x1, x2, ~x3)","(~x1, ~x2, x3)","(~x1, x2, ~x3)","(x1, ~x2, ~x3)","(~x1, ~x2, ~x3)"]
     clause = sys.argv[1] if len(sys.argv) > 1 else "(x1, ~x2, ~x3)"
     # --- Plot the requested clause with the wider layout and wrapped legends ---
     render(clause)

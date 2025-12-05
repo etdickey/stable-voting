@@ -13,7 +13,6 @@ Original file is located at
 
 import itertools
 import os, re, random
-import random
 from collections import defaultdict
 from typing import Dict, Tuple, Set, List, Optional, Iterable, Union
 
@@ -305,7 +304,6 @@ def build_graph_from_spec(clause_str:str, starting_weight:int = 1000, weight_per
     return G, n, clause_polarities
 
 """## Tournament/Networkx graph conversion"""
-
 def digraph_to_tournament(G: nx.DiGraph) -> Dict[Tuple[int, int], int]:
     """
     Convert a networkx.DiGraph into a tournament dictionary:
@@ -580,284 +578,286 @@ def draw_graph(
 ## SAT Testers
 """
 
-# Satisfiable
-# clause = "(~x1, ~x2, ~x3), (x1, x2, x3)"
-clause = "(x1, x2),(x1,~x2),(~x1,x2),(~x1,~x2)"
-clauses = ["(x1, x2)", "(x1, ~x2)", "(~x1, x2)", "(~x1, ~x2)"]
+#Main
+if __name__ == "__main__":
+    # Satisfiable
+    # clause = "(~x1, ~x2, ~x3), (x1, x2, x3)"
+    clause = "(x1, x2),(x1,~x2),(~x1,x2),(~x1,~x2)"
+    clauses = ["(x1, x2)", "(x1, ~x2)", "(~x1, x2)", "(~x1, ~x2)"]
 
-# All combinations of size 2, 3
-clause_sets_2_3 = list(itertools.combinations(clauses, 2)) \
-                + list(itertools.combinations(clauses, 3))
-
-
-# NOT Satisfiable
-unsat_clauses = [
-    # 1) Classic unsat, all possible 2-sat with 2 variables
-    ["(x1, x2)", "(x1, ~x2)", "(~x1, x2)", "(~x1, ~x2)"],
-    # 2) Force x1 = x2, x2 = x3, but x1 ≠ x3 (inconsistent)
-    ["(x1, ~x2)", "(~x1, x2)", "(x2, ~x3)", "(~x2, x3)", "(x1, x3)", "(~x1, ~x3)"],
-    # 3) Force x1 and ¬x1 simultaneously via “pseudo-unit” pairs
-    ["(x1, x2)", "(x1, ~x2)", "(~x1, x3)", "(~x1, ~x3)"],
-    # 4) Two contradictory 3-step implication cycles
-    ["(~x1, x2)", "(~x2, x3)", "(~x3, ~x1)", "(x1, ~x2)", "(x2, ~x3)", "(x3, x1)"]
-]
-
-"""## Running the clauses"""
-
-STARTING_WEIGHT = 100
-
-# all sets of 3 of clauses:
-clause_sets = list(itertools.combinations(clauses, 3))
-all_graph_sets = list(build_graph_from_spec(curr, STARTING_WEIGHT) for curr in clause_sets)
-G, n, polarity = build_graph_from_spec(clause, STARTING_WEIGHT)
-curr_clause = clause
-# curr_test_idx = 2
-# G, n, polarity = all_graph_sets[curr_test_idx]
-# curr_clause = clause_sets[curr_test_idx]
-
-# cats = classify_edges_from_spec(G, n, polarity)
-# counts = edge_counts_summary(cats)
-tournament = digraph_to_tournament(G)
-
-print("weights used:")
-trash = list(set(tournament.values()))
-for i in range(0, len(trash), 10):
-    print(trash[i:i + 10])
-
-# draw_graph(G)
-
-import pprint, time
-curr = time.time()#time
-tournament = digraph_to_tournament(G)
-winner, removal_order, summary, decisive_edge = stable_voting_winner_order_top(G)
-print(f"Duration (sec): {time.time() - curr}")#time
-
-print_useful_info_from_sv((winner, removal_order, summary, decisive_edge), curr_clause)
-
-tournament = digraph_to_tournament(G)
-mg = MarginGraph(get_candidates_from_digraph(G), tournament_to_edges(tournament))
-winners, elim_dict = stable_voting_with_explanation(mg, algorithm='basic')
-winner = winners[0]
-
-print("Winner",winner)
-print("Elimination dictionary",elim_dict)
-
-# todo: master copy below does not match our order printed in this cell
-# Elimination dictionary {'C': ['F1', 'X2', 'X1', 'T1', 'L3', 'F2', 'L2', 'L1', 'T2']}
-
-"""### For all 2-sat combinations, check all permutations of edge weight orders"""
-
-# for each permutation of the sequence, check that
-# 1) all SAT have C winners
-# 2) all UNSAT have not C winners
-
-# num_groups = NUM_GROUPS #because we say so, see code above
-weights_perm = fibonacci_series(NUM_GROUPS, STARTING_WEIGHT, STARTING_WEIGHT*2)
+    # All combinations of size 2, 3
+    clause_sets_2_3 = list(itertools.combinations(clauses, 2)) \
+                    + list(itertools.combinations(clauses, 3))
 
 
-# Optional: SAMPLE instead of iterating all 13! permutations (uncomment to use)
-# perms_iter = (random.sample(weights_perm, k=len(weights_perm)) for _ in range(1000))
-# Otherwise, ALL permutations (warning: 13! is astronomically large):
-# perms_iter = itertools.permutations(weights_perm)
-PRINT_EVERY = 5000
-TIME_EVERY_SEC = 60
-total_time = 0.0
-num_done = 0
-last_report_t = time.time()
-# all_failures = []
-num_all_failures = 0
-num_perms_failed = 0
-all_diffs = []
+    # NOT Satisfiable
+    unsat_clauses = [
+        # 1) Classic unsat, all possible 2-sat with 2 variables
+        ["(x1, x2)", "(x1, ~x2)", "(~x1, x2)", "(~x1, ~x2)"],
+        # 2) Force x1 = x2, x2 = x3, but x1 ≠ x3 (inconsistent)
+        ["(x1, ~x2)", "(~x1, x2)", "(x2, ~x3)", "(~x2, x3)", "(x1, x3)", "(~x1, ~x3)"],
+        # 3) Force x1 and ¬x1 simultaneously via “pseudo-unit” pairs
+        ["(x1, x2)", "(x1, ~x2)", "(~x1, x3)", "(~x1, ~x3)"],
+        # 4) Two contradictory 3-step implication cycles
+        ["(~x1, x2)", "(~x2, x3)", "(~x3, ~x1)", "(x1, ~x2)", "(x2, ~x3)", "(x3, x1)"]
+    ]
 
-total_our_time = 0
-total_their_time = 0
-total_graph_build_time = 0
-total_post_overhead_time = 0
-total_clauses_running = len(clause_sets_2_3) + len(unsat_clauses)
+    """## Running the clauses"""
 
-p_i = -1
-for perm in itertools.permutations(weights_perm):#winner should be C
-    p_i += 1
-    perm_start = time.time()
-    correct = True
-    # failures = []
-    num_failures = 0
-    diff = []
-    diff_flag = True
+    STARTING_WEIGHT = 100
 
-    our_time = 0
-    their_time = 0
-    graph_build_time = 0
-    post_overhead_time = 0
+    # all sets of 3 of clauses:
+    clause_sets = list(itertools.combinations(clauses, 3))
+    all_graph_sets = list(build_graph_from_spec(curr, STARTING_WEIGHT) for curr in clause_sets)
+    G, n, polarity = build_graph_from_spec(clause, STARTING_WEIGHT)
+    curr_clause = clause
+    # curr_test_idx = 2
+    # G, n, polarity = all_graph_sets[curr_test_idx]
+    # curr_clause = clause_sets[curr_test_idx]
 
-    # --- SAT cases: must produce C as winner ---
-    # Get winners for satisfiable cases
-    for curr_clause in clause_sets_2_3:
-        trash_time = time.time()
-        #G, n, polarity
-        G, _, _ = build_graph_from_spec(curr_clause, weight_perm=list(perm))
-        graph_build_time += time.time() - trash_time
-
-
-        # trash_time = time.time()
-        # # Alg we wrote
-        # my_winner, removal_order, summary, decisive_edge = stable_voting_winner_order_top(G)
-        # our_time += time.time() - trash_time
-
-
-        trash_time = time.time()
-        # Alg from SV Paper
-        tournament = digraph_to_tournament(G)
-        mg = MarginGraph(get_candidates_from_digraph(G), tournament_to_edges(tournament))
-        winners, elim_dict = stable_voting_with_explanation(mg, algorithm='basic')
-        winner = winners[0]
-        their_time += time.time() - trash_time
-
-
-        # trash_time = time.time()
-        # if my_winner != winner or removal_order != elim_dict[winner]:
-        #   diff_flag = False
-        #   diff.append(("Difference in algos:",curr_clause, my_winner, winner))
-
-        if winner != "C":
-            correct = False
-            # failures.append(("SAT_expected_C", curr_clause, winner))
-            num_failures += 1
-            # Optional: print detailed trace for debugging:
-            # print_useful_info_from_sv((winner, removal_order, summary, decisive_edge), curr_clause)
-            # print()
-            # print(clause)
-            # print("Winner",winner)
-            # print("Elimination dictionary",elim_dict)
-        post_overhead_time += time.time() - trash_time
-
-    # --- UNSAT cases: must NOT produce C as winner ---
-    for curr_clause in unsat_clauses:
-        trash_time = time.time()
-        #G, n, polarity
-        G, _, _ = build_graph_from_spec(curr_clause, weight_perm=list(perm))
-        graph_build_time += time.time() - trash_time
-
-
-        # trash_time = time.time()
-        # # Alg we wrote
-        # my_winner, removal_order, summary, decisive_edge = stable_voting_winner_order_top(G)
-        # our_time += time.time() - trash_time
-
-
-        trash_time = time.time()
-        # Alg from SV Paper
-        tournament = digraph_to_tournament(G)
-        mg = MarginGraph(get_candidates_from_digraph(G), tournament_to_edges(tournament))
-        winners, elim_dict = stable_voting_with_explanation(mg, algorithm='basic')
-        # https://pref-voting.readthedocs.io/en/latest/margin_based_methods.html#stable-voting
-        # https://pref-voting.readthedocs.io/en/latest/_modules/pref_voting/margin_based_methods.html#stable_voting
-        # s...with_explanation(edata, curr_cands=None, strength_function=None, algorithm='basic')
-        # _s...with_explanation(edata,
-        #                       curr_cands = curr_cands,
-        #                       strength_function = strength_function,
-        #                       terminate_early=False)
-        # ws, mem_sv_winners, elim_dict, mem_elim_dict =
-        # _stable_voting_with_explanation(edata,
-        #                                curr_cands = edata.candidates,
-        #                                strength_function = edata.margin,
-        #                                sorted_matches = [(a, b, m)...],
-        #                                mem_sv_winners = {},
-        #                                mem_elim_dict = {},
-        #                                terminate_early = terminate_early
-        #                                )
-        winner = winners[0]
-        their_time += time.time() - trash_time
-
-
-        trash_time = time.time()
-        # if my_winner != winner or removal_order != elim_dict[winner]:
-        #   diff_flag = False
-        #   diff.append(("Difference in algos:",curr_clause, my_winner, winner))
-
-        if winner == "C":
-            correct = False
-            # failures.append(("UNSAT_expected_not_C", curr_clause, winner))
-            num_failures += 1
-            # Optional: print detailed trace for debugging:
-            # print_useful_info_from_sv((winner, removal_order, summary, decisive_edge), curr_clause)
-            # print()
-            # print(clause)
-            # print("Winner",winner)
-            # print("Elimination dictionary",elim_dict)
-        post_overhead_time += time.time() - trash_time
-
-
-    # --- update stats ---
-    perm_elapsed = time.time() - perm_start
-    total_time += perm_elapsed
-    total_our_time += our_time/total_clauses_running
-    total_their_time += their_time/total_clauses_running
-    total_graph_build_time += graph_build_time/total_clauses_running
-    total_post_overhead_time += post_overhead_time/total_clauses_running
-    num_done += 1
-    if not correct:
-        num_all_failures += num_failures
-        num_perms_failed += 1
-        # for tag, clause, win in failures:
-        #     all_failures.append((p_i, tag, clause, win))
-    else:
-        print("FOUND ONE: ", perm)
-
-    if not diff_flag:
-        for tag, clause, my_win, win in diff:
-            all_diffs.append((p_i, tag, clause, my_win, win))
-
-    # --- periodic progress report (avg runtime + fail count so far) ---
-    now = time.time()
-    if (p_i % PRINT_EVERY == 0) or (now - last_report_t >= TIME_EVERY_SEC):
-        avg = total_time / num_done
-        avg_per_perm = total_time / (num_done * total_clauses_running)
-        avg_our_time = total_our_time / num_done
-        avg_their_time = total_their_time / num_done
-        avg_graph_build_time = total_graph_build_time / num_done
-        avg_post_overhead_time = total_post_overhead_time / num_done
-        # print(f"[PROGRESS] perms_done={num_done}  avg_time={avg:.4f}s  fails_so_far={len(all_failures)} diffs_so_far={len(all_diffs)}")
-        print(f"[PROGRESS] perms_done={num_done}  diffs_so_far={len(all_diffs)}  "\
-              f"fails_so_far={num_all_failures}  perms_failed_so_far={num_perms_failed}  " \
-              f"(avg_perm={avg:.4f}s, avg_case={avg_per_perm:.4f}s avg_our_time={avg_our_time:.4f}s, avg_their_time={avg_their_time:.4f}s, "\
-              f"avg_graph_build_time={avg_graph_build_time:.4f}s, avg_post_overhead_time={avg_post_overhead_time:.4f}s)")
-        last_report_t = now
-
-"""### All subgraph tournaments saved"""
-
-print("Subgraphs of size 3 from sv_memo:")
-for candidate_set, result in sv_memo.items():
-    if len(candidate_set) == 4:
-        # other conditions:
-        if all(x in candidate_set for x in ['C', 'X2', 'L1', 'T2']):
-          print(candidate_set)
-          print_useful_info_from_sv(result)
-          print()
-
-"""### Stable voting library"""
-
-for clause, (G, _, _) in zip(clause_sets, all_graph_sets):
+    # cats = classify_edges_from_spec(G, n, polarity)
+    # counts = edge_counts_summary(cats)
     tournament = digraph_to_tournament(G)
 
+    print("weights used:")
+    trash = list(set(tournament.values()))
+    for i in range(0, len(trash), 10):
+        print(trash[i:i + 10])
+
+    # draw_graph(G)
+
+    import pprint, time
+    curr = time.time()#time
+    tournament = digraph_to_tournament(G)
+    winner, removal_order, summary, decisive_edge = stable_voting_winner_order_top(G)
+    print(f"Duration (sec): {time.time() - curr}")#time
+
+    print_useful_info_from_sv((winner, removal_order, summary, decisive_edge), curr_clause)
+
+    tournament = digraph_to_tournament(G)
     mg = MarginGraph(get_candidates_from_digraph(G), tournament_to_edges(tournament))
     winners, elim_dict = stable_voting_with_explanation(mg, algorithm='basic')
+    winner = winners[0]
 
-    print(clause)
-    print("Winner",winners)
+    print("Winner",winner)
     print("Elimination dictionary",elim_dict)
-    print()
 
-# subcandidates = ["C","F1","F2","T3","L"]
-# subtournament = induced_subtournament(tournament, subcandidates)
-# draw_graph(*build_adj_and_edge_weights(subtournament, subcandidates))
-# sub_winner, sub_summary, sub_removal_order, sub_decisive_edge = stable_voting_winner_order_top(G)
-# print("Subtournament winner:", sub_winner)
-# print("Subtournament removal order:", sub_removal_order[-1])
-# print("Subtournament decisive edge:", sub_decisive_edge)
+    # todo: master copy below does not match our order printed in this cell
+    # Elimination dictionary {'C': ['F1', 'X2', 'X1', 'T1', 'L3', 'F2', 'L2', 'L1', 'T2']}
 
-"""## Ethan's goal (code merge)"""
+    """### For all 2-sat combinations, check all permutations of edge weight orders"""
 
-# G, n, polarity = build_graph_from_spec(clause)
-# cats = classify_edges_from_spec(G, n, polarity)
-# counts = edge_counts_summary(cats)
+    # for each permutation of the sequence, check that
+    # 1) all SAT have C winners
+    # 2) all UNSAT have not C winners
+
+    # num_groups = NUM_GROUPS #because we say so, see code above
+    weights_perm = fibonacci_series(NUM_GROUPS, STARTING_WEIGHT, STARTING_WEIGHT*2)
+
+
+    # Optional: SAMPLE instead of iterating all 13! permutations (uncomment to use)
+    # perms_iter = (random.sample(weights_perm, k=len(weights_perm)) for _ in range(1000))
+    # Otherwise, ALL permutations (warning: 13! is astronomically large):
+    # perms_iter = itertools.permutations(weights_perm)
+    PRINT_EVERY = 5000
+    TIME_EVERY_SEC = 60
+    total_time = 0.0
+    num_done = 0
+    last_report_t = time.time()
+    # all_failures = []
+    num_all_failures = 0
+    num_perms_failed = 0
+    all_diffs = []
+
+    total_our_time = 0
+    total_their_time = 0
+    total_graph_build_time = 0
+    total_post_overhead_time = 0
+    total_clauses_running = len(clause_sets_2_3) + len(unsat_clauses)
+
+    p_i = -1
+    for perm in itertools.permutations(weights_perm):#winner should be C
+        p_i += 1
+        perm_start = time.time()
+        correct = True
+        # failures = []
+        num_failures = 0
+        diff = []
+        diff_flag = True
+
+        our_time = 0
+        their_time = 0
+        graph_build_time = 0
+        post_overhead_time = 0
+
+        # --- SAT cases: must produce C as winner ---
+        # Get winners for satisfiable cases
+        for curr_clause in clause_sets_2_3:
+            trash_time = time.time()
+            #G, n, polarity
+            G, _, _ = build_graph_from_spec(curr_clause, weight_perm=list(perm))
+            graph_build_time += time.time() - trash_time
+
+
+            # trash_time = time.time()
+            # # Alg we wrote
+            # my_winner, removal_order, summary, decisive_edge = stable_voting_winner_order_top(G)
+            # our_time += time.time() - trash_time
+
+
+            trash_time = time.time()
+            # Alg from SV Paper
+            tournament = digraph_to_tournament(G)
+            mg = MarginGraph(get_candidates_from_digraph(G), tournament_to_edges(tournament))
+            winners, elim_dict = stable_voting_with_explanation(mg, algorithm='basic')
+            winner = winners[0]
+            their_time += time.time() - trash_time
+
+
+            # trash_time = time.time()
+            # if my_winner != winner or removal_order != elim_dict[winner]:
+            #   diff_flag = False
+            #   diff.append(("Difference in algos:",curr_clause, my_winner, winner))
+
+            if winner != "C":
+                correct = False
+                # failures.append(("SAT_expected_C", curr_clause, winner))
+                num_failures += 1
+                # Optional: print detailed trace for debugging:
+                # print_useful_info_from_sv((winner, removal_order, summary, decisive_edge), curr_clause)
+                # print()
+                # print(clause)
+                # print("Winner",winner)
+                # print("Elimination dictionary",elim_dict)
+            post_overhead_time += time.time() - trash_time
+
+        # --- UNSAT cases: must NOT produce C as winner ---
+        for curr_clause in unsat_clauses:
+            trash_time = time.time()
+            #G, n, polarity
+            G, _, _ = build_graph_from_spec(curr_clause, weight_perm=list(perm))
+            graph_build_time += time.time() - trash_time
+
+
+            # trash_time = time.time()
+            # # Alg we wrote
+            # my_winner, removal_order, summary, decisive_edge = stable_voting_winner_order_top(G)
+            # our_time += time.time() - trash_time
+
+
+            trash_time = time.time()
+            # Alg from SV Paper
+            tournament = digraph_to_tournament(G)
+            mg = MarginGraph(get_candidates_from_digraph(G), tournament_to_edges(tournament))
+            winners, elim_dict = stable_voting_with_explanation(mg, algorithm='basic')
+            # https://pref-voting.readthedocs.io/en/latest/margin_based_methods.html#stable-voting
+            # https://pref-voting.readthedocs.io/en/latest/_modules/pref_voting/margin_based_methods.html#stable_voting
+            # s...with_explanation(edata, curr_cands=None, strength_function=None, algorithm='basic')
+            # _s...with_explanation(edata,
+            #                       curr_cands = curr_cands,
+            #                       strength_function = strength_function,
+            #                       terminate_early=False)
+            # ws, mem_sv_winners, elim_dict, mem_elim_dict =
+            # _stable_voting_with_explanation(edata,
+            #                                curr_cands = edata.candidates,
+            #                                strength_function = edata.margin,
+            #                                sorted_matches = [(a, b, m)...],
+            #                                mem_sv_winners = {},
+            #                                mem_elim_dict = {},
+            #                                terminate_early = terminate_early
+            #                                )
+            winner = winners[0]
+            their_time += time.time() - trash_time
+
+
+            trash_time = time.time()
+            # if my_winner != winner or removal_order != elim_dict[winner]:
+            #   diff_flag = False
+            #   diff.append(("Difference in algos:",curr_clause, my_winner, winner))
+
+            if winner == "C":
+                correct = False
+                # failures.append(("UNSAT_expected_not_C", curr_clause, winner))
+                num_failures += 1
+                # Optional: print detailed trace for debugging:
+                # print_useful_info_from_sv((winner, removal_order, summary, decisive_edge), curr_clause)
+                # print()
+                # print(clause)
+                # print("Winner",winner)
+                # print("Elimination dictionary",elim_dict)
+            post_overhead_time += time.time() - trash_time
+
+
+        # --- update stats ---
+        perm_elapsed = time.time() - perm_start
+        total_time += perm_elapsed
+        total_our_time += our_time/total_clauses_running
+        total_their_time += their_time/total_clauses_running
+        total_graph_build_time += graph_build_time/total_clauses_running
+        total_post_overhead_time += post_overhead_time/total_clauses_running
+        num_done += 1
+        if not correct:
+            num_all_failures += num_failures
+            num_perms_failed += 1
+            # for tag, clause, win in failures:
+            #     all_failures.append((p_i, tag, clause, win))
+        else:
+            print("FOUND ONE: ", perm)
+
+        if not diff_flag:
+            for tag, clause, my_win, win in diff:
+                all_diffs.append((p_i, tag, clause, my_win, win))
+
+        # --- periodic progress report (avg runtime + fail count so far) ---
+        now = time.time()
+        if (p_i % PRINT_EVERY == 0) or (now - last_report_t >= TIME_EVERY_SEC):
+            avg = total_time / num_done
+            avg_per_perm = total_time / (num_done * total_clauses_running)
+            avg_our_time = total_our_time / num_done
+            avg_their_time = total_their_time / num_done
+            avg_graph_build_time = total_graph_build_time / num_done
+            avg_post_overhead_time = total_post_overhead_time / num_done
+            # print(f"[PROGRESS] perms_done={num_done}  avg_time={avg:.4f}s  fails_so_far={len(all_failures)} diffs_so_far={len(all_diffs)}")
+            print(f"[PROGRESS] perms_done={num_done}  diffs_so_far={len(all_diffs)}  "\
+                  f"fails_so_far={num_all_failures}  perms_failed_so_far={num_perms_failed}  " \
+                  f"(avg_perm={avg:.4f}s, avg_case={avg_per_perm:.4f}s avg_our_time={avg_our_time:.4f}s, avg_their_time={avg_their_time:.4f}s, "\
+                  f"avg_graph_build_time={avg_graph_build_time:.4f}s, avg_post_overhead_time={avg_post_overhead_time:.4f}s)")
+            last_report_t = now
+
+    """### All subgraph tournaments saved"""
+
+    print("Subgraphs of size 3 from sv_memo:")
+    for candidate_set, result in sv_memo.items():
+        if len(candidate_set) == 4:
+            # other conditions:
+            if all(x in candidate_set for x in ['C', 'X2', 'L1', 'T2']):
+              print(candidate_set)
+              print_useful_info_from_sv(result)
+              print()
+
+    """### Stable voting library"""
+
+    for clause, (G, _, _) in zip(clause_sets, all_graph_sets):
+        tournament = digraph_to_tournament(G)
+
+        mg = MarginGraph(get_candidates_from_digraph(G), tournament_to_edges(tournament))
+        winners, elim_dict = stable_voting_with_explanation(mg, algorithm='basic')
+
+        print(clause)
+        print("Winner",winners)
+        print("Elimination dictionary",elim_dict)
+        print()
+
+    # subcandidates = ["C","F1","F2","T3","L"]
+    # subtournament = induced_subtournament(tournament, subcandidates)
+    # draw_graph(*build_adj_and_edge_weights(subtournament, subcandidates))
+    # sub_winner, sub_summary, sub_removal_order, sub_decisive_edge = stable_voting_winner_order_top(G)
+    # print("Subtournament winner:", sub_winner)
+    # print("Subtournament removal order:", sub_removal_order[-1])
+    # print("Subtournament decisive edge:", sub_decisive_edge)
+
+    """## Ethan's goal (code merge)"""
+
+    # G, n, polarity = build_graph_from_spec(clause)
+    # cats = classify_edges_from_spec(G, n, polarity)
+    # counts = edge_counts_summary(cats)
