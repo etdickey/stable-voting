@@ -12,7 +12,7 @@
 //
 //==============================================
 //USE THIS ONE:::
-// g++ test_athina.cpp  -O3 -march=native -flto -fomit-frame-pointer -DNDEBUG && a.exe
+// g++ test_athina.cpp  -O3 -march=native -flto -fomit-frame-pointer -DNDEBUG -o sv && ./sv
 //==============================================
 
 #include <bits/stdc++.h> //includes basically everything you could need, including iomanip
