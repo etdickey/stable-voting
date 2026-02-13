@@ -22,7 +22,7 @@ struct SVFast {
     // Which SV rule to use?
     // 0 = Standard SV
     // 1 = Prioritized: eliminate n/2 TF nodes first
-    static const int RULE = 1;
+    static const int RULE = 0;
     //-------choose SV or SSV-------
     // true = Stable Voting
     // false = Simple Stable Voting

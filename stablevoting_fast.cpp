@@ -21,7 +21,8 @@ using namespace std;
 
 #include "fast_utils.hpp"
 #include "graph_template.hpp"
-#include "template_builders.hpp"
+//#include "template_builders.hpp"
+#include "test_builder.hpp"
 #include "sv_fast.hpp"
 #include "printers.hpp"
 
@@ -116,7 +117,7 @@ static AI void get_2sat_clauses(vector<vector<string>>& sat_sets, vector<vector<
     sat_sets.clear(); unsat_sets.clear(); sat_assignments.clear(); unsat_assignments.clear();
     // // Base four clauses
     // vector<string> base = {"(x1, x2)", "(x1, ~x2)", "(~x1, x2)", "(~x1, ~x2)"};
-    //
+    
     // // Build clause sets: all C(4,2) and C(4,3) for SAT suite
     // for (int i=0;i<4;++i) for (int j=i+1;j<4;++j) sat_sets.push_back({base[i],base[j]});
     // for (int i=0;i<4;++i) for (int j=i+1;j<4;++j) for (int k=j+1;k<4;++k) sat_sets.push_back({base[i],base[j],base[k]});
@@ -135,28 +136,28 @@ static AI void get_3sat_clauses(vector<vector<string>>& sat_sets, vector<vector<
     // 3-SAT test suite: first 8 are SAT with designated (x1,x2,x3), next 7 are UNSAT (assignment = -1),
     // and the last one is a mixed-size SAT clause set with its own designated assignment.
     sat_sets = {
-        // {"(~x1, ~x2, ~x3)", "(~x1, ~x2, x3)", "(~x1, x2, ~x3)"},   //  0 SAT,  (x1,x2,x3) = (0,0,0)
-        // {"(~x1, ~x2, x3)", "(~x1, x2, x3)", "(x1, ~x2, x3)"},      //  1 SAT,  (x1,x2,x3) = (0,0,1)
-        // {"(~x1, x2, ~x3)", "(~x1, x2, x3)", "(x1, x2, ~x3)"},      //  2 SAT,  (x1,x2,x3) = (0,1,0)
-        // {"(~x1, x2, x3)", "(~x1, x2, ~x3)", "(x1, x2, x3)"},       //  3 SAT,  (x1,x2,x3) = (0,1,1)
-        // {"(x1, ~x2, ~x3)", "(x1, ~x2, x3)", "(x1, x2, ~x3)"},      //  4 SAT,  (x1,x2,x3) = (1,0,0)
-        // {"(x1, ~x2, x3)", "(x1, ~x2, ~x3)", "(~x1, ~x2, x3)"},     //  5 SAT,  (x1,x2,x3) = (1,0,1)
-        // {"(x1, x2, ~x3)", "(x1, x2, x3)", "(~x1, x2, ~x3)"},       //  6 SAT,  (x1,x2,x3) = (1,1,0)
-        // {"(x1, x2, x3)", "(x1, x2, ~x3)", "(x1, ~x2, x3)"},        //  7 SAT,  (x1,x2,x3) = (1,1,1)
-        //
-        // {"(x1, ~x2, x3)", "(~x1, x2, x3)", "(x1, x2, ~x3)", "(~x1, ~x2, ~x3)"},  // 15 SAT mixed-size (4 clauses), (x1,x2,x3) = (1,0,1)
-        // {"(~x1, x2, x3)", "(x1, x2, x3)"},                                      // 16 SAT mixed-size (2 clauses), assignment (0,1,1)
-        // {"(x1, ~x2, ~x3)", "(x1, ~x2, x3)", "(x1, x2, ~x3)"},                   // 17 SAT mixed-size (3 clauses), assignment (1,0,0)
-        // {"(~x1, x2, ~x3)", "(~x1, x2, x3)", "(x1, x2, ~x3)"},                   // 18 SAT mixed-size (3 clauses), assignment (0,1,0)
-        // {"(x1, x2, x3)", "(x1, ~x2, x3)"},                                      // 19 SAT mixed-size (2 clauses), assignment (1,1,1)
-        // {"(~x1, ~x2, x3)", "(x1, ~x2, x3)"},                                    // 20 SAT mixed-size (2 clauses), assignment (0,0,1)
-        // {"(x1, x2, ~x3)", "(x1, x2, x3)", "(~x1, x2, ~x3)", "(x1, ~x2, ~x3)"},  // 21 SAT mixed-size (4 clauses), assignment (1,1,0)
-        // {"(~x1, x2, x3)", "(~x1, x2, ~x3)", "(x1, x2, x3)", "(~x1, ~x2, x3)"},  // 22 SAT mixed-size (4 clauses), assignment (0,1,1)
-        // {"(x1, ~x2, x3)", "(~x1, ~x2, x3)", "(x1, x2, x3)"},                    // 23 SAT mixed-size (3 clauses), assignment (1,0,1)
-        // {"(~x1, x2, ~x3)", "(~x1, x2, x3)", "(x1, ~x2, ~x3)", "(x1, x2, ~x3)"}, // 24 SAT mixed-size (4 clauses), assignment (0,1,0)
-        // {"(x1, ~x2, x3)", "(x1, x2, x3)", "(~x1, ~x2, x3)"},                    // 25 SAT mixed-size (3 clauses), assignment (1,0,1)
-        // {"(~x1, ~x2, ~x3)", "(x1, ~x2, ~x3)", "(~x1, x2, ~x3)"},                // 26 SAT mixed-size (3 clauses), assignment (0,0,0)
-        // {"(x1, x2, x3)", "(x1, x2, ~x3)", "(x1, ~x2, x3)", "(~x1, x2, x3)"}     // 27 SAT mixed-size (4 clauses), assignment (1,1,1)
+        {"(~x1, ~x2, ~x3)", "(~x1, ~x2, x3)", "(~x1, x2, ~x3)"},   //  0 SAT,  (x1,x2,x3) = (0,0,0)
+        {"(~x1, ~x2, x3)", "(~x1, x2, x3)", "(x1, ~x2, x3)"},      //  1 SAT,  (x1,x2,x3) = (0,0,1)
+        {"(~x1, x2, ~x3)", "(~x1, x2, x3)", "(x1, x2, ~x3)"},      //  2 SAT,  (x1,x2,x3) = (0,1,0)
+        {"(~x1, x2, x3)", "(~x1, x2, ~x3)", "(x1, x2, x3)"},       //  3 SAT,  (x1,x2,x3) = (0,1,1)
+        {"(x1, ~x2, ~x3)", "(x1, ~x2, x3)", "(x1, x2, ~x3)"},      //  4 SAT,  (x1,x2,x3) = (1,0,0)
+        {"(x1, ~x2, x3)", "(x1, ~x2, ~x3)", "(~x1, ~x2, x3)"},     //  5 SAT,  (x1,x2,x3) = (1,0,1)
+        {"(x1, x2, ~x3)", "(x1, x2, x3)", "(~x1, x2, ~x3)"},       //  6 SAT,  (x1,x2,x3) = (1,1,0)
+        {"(x1, x2, x3)", "(x1, x2, ~x3)", "(x1, ~x2, x3)"},        //  7 SAT,  (x1,x2,x3) = (1,1,1)
+        
+        {"(x1, ~x2, x3)", "(~x1, x2, x3)", "(x1, x2, ~x3)", "(~x1, ~x2, ~x3)"},  // 15 SAT mixed-size (4 clauses), (x1,x2,x3) = (1,0,1)
+        {"(~x1, x2, x3)", "(x1, x2, x3)"},                                      // 16 SAT mixed-size (2 clauses), assignment (0,1,1)
+        {"(x1, ~x2, ~x3)", "(x1, ~x2, x3)", "(x1, x2, ~x3)"},                   // 17 SAT mixed-size (3 clauses), assignment (1,0,0)
+        {"(~x1, x2, ~x3)", "(~x1, x2, x3)", "(x1, x2, ~x3)"},                   // 18 SAT mixed-size (3 clauses), assignment (0,1,0)
+        {"(x1, x2, x3)", "(x1, ~x2, x3)"},                                      // 19 SAT mixed-size (2 clauses), assignment (1,1,1)
+        {"(~x1, ~x2, x3)", "(x1, ~x2, x3)"},                                    // 20 SAT mixed-size (2 clauses), assignment (0,0,1)
+        {"(x1, x2, ~x3)", "(x1, x2, x3)", "(~x1, x2, ~x3)", "(x1, ~x2, ~x3)"},  // 21 SAT mixed-size (4 clauses), assignment (1,1,0)
+        {"(~x1, x2, x3)", "(~x1, x2, ~x3)", "(x1, x2, x3)", "(~x1, ~x2, x3)"},  // 22 SAT mixed-size (4 clauses), assignment (0,1,1)
+        {"(x1, ~x2, x3)", "(~x1, ~x2, x3)", "(x1, x2, x3)"},                    // 23 SAT mixed-size (3 clauses), assignment (1,0,1)
+        {"(~x1, x2, ~x3)", "(~x1, x2, x3)", "(x1, ~x2, ~x3)", "(x1, x2, ~x3)"}, // 24 SAT mixed-size (4 clauses), assignment (0,1,0)
+        {"(x1, ~x2, x3)", "(x1, x2, x3)", "(~x1, ~x2, x3)"},                    // 25 SAT mixed-size (3 clauses), assignment (1,0,1)
+        {"(~x1, ~x2, ~x3)", "(x1, ~x2, ~x3)", "(~x1, x2, ~x3)"},                // 26 SAT mixed-size (3 clauses), assignment (0,0,0)
+        {"(x1, x2, x3)", "(x1, x2, ~x3)", "(x1, ~x2, x3)", "(~x1, x2, x3)"}     // 27 SAT mixed-size (4 clauses), assignment (1,1,1)
     };
 
     unsat_sets = {
@@ -236,7 +237,7 @@ int main(){
     // ios::sync_with_stdio(false); cin.tie(nullptr);
 
     const int STARTING_WEIGHT = 100;
-    const int NUM_GROUPS = 11;        // effective weight buckets
+    const int NUM_GROUPS = 12;        // effective weight buckets
     const size_t PRINT_EVERY = 50000;  // progress cadence
     const double TIME_EVERY_SEC = 60.0;
 
