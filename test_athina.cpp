@@ -92,6 +92,32 @@ static AI void fibonacci_series(int n, int seed1, int seed2, vector<int>& out){
     for (int i=2;i<n;++i){ long long c=a+b; if (c>INT_MAX) c=INT_MAX; out.push_back((int)c); a=b; b=c; }
 }
 
+static void run_formula(const vector<string>& F, const char* tag, const int* W){
+    GraphTemplate TT = build_template_from_strings(F);
+
+    if (TT.names.size() > 64) {
+        cerr << tag << " skipped: too many candidates (" << TT.names.size() << ")\n";
+        return;
+    }
+
+    SVFast sol(TT);
+    sol.reset_epoch(W);
+    int win = sol.solve_winner_standard(TT.full_mask);
+    // print_edges_by_weight(TT, W);
+
+    cout << tag << " ";
+    for (auto &cl : F) cout << cl << " ";
+    cout << "\n";
+
+    if (win >= 0) {
+        cout << "  Winner: " << TT.names[win] << "\n";
+        vector<int> elim;
+        sol.reconstruct_standard(TT.full_mask, win, elim);
+        cout << "  Elimination Order: " << get_elim_order_string(elim, TT) << "\n";
+    } else {
+        cout << "  No winner found.\n";
+    }
+}
 
 
 
@@ -122,24 +148,74 @@ int main(){
     // print the output of the fibonacci series
     for (int i=0;i<NUM_GROUPS;++i) cout << W[i] << " "; cout << "\n";  
 
-   
-    vector<string> formula =  {"(x1, x2, x3)","(~x1, x2, x3)","(x1, ~x2, x3)","(x1, x2, ~x3)","(~x1, ~x2, x3)","(~x1, x2, ~x3)","(x1, ~x2, ~x3)","(~x1, ~x2, ~x3)"};
-    // {"(x1, x2, x3)","(~x1, x2, x3)","(x1, ~x2, x3)","(x1, x2, ~x3)","(~x1, ~x2, x3)","(~x1, x2, ~x3)","(x1, ~x2, ~x3)","(~x1, ~x2, ~x3)"};
-    
-    // {"(x1, x2, x3)", "(~x1, x2, x3)","(x4,x5,x6)","(~x3,~x4,~x5)"}; //
-    //{"(x1, x2, x3)","(~x1, x2, x3)","(x1, ~x2, x3)","(x1, x2, ~x3)","(~x1, ~x2, x3)","(~x1, x2, ~x3)","(x1, ~x2, ~x3)","(~x1, ~x2, ~x3)"};
-    
-    
-    //{"(x1, x2)","(~x1, x2)","(x1, ~x2)","(~x1, ~x2)"}; //,"(~x1, ~x2)"
+    vector<string> formula = {"(~x3, x2)", "(x3, ~x2)", "(x1, x4)", "(x1, ~x4)", "(x1, x2)", "(x1, ~x2)"};
 
-    //{"(x1, x2, x3)","(~x1, x2, x3)","(x1, ~x2, x3)","(x1, x2, ~x3)","(~x1, ~x2, x3)","(~x1, x2, ~x3)","(x1, ~x2, ~x3)", "(~x1, ~x2, ~x3)"};
     
-        // {"(x1, x2, x3)","(x1, x2, x4)","(x1, x2, ~x5)","(x1, x2, x6)" };
-    
-        //{"(x1, x2, x3)","(~x1, x2, x3)","(x1, ~x2, x3)","(x1, x2, ~x3)","(~x1, ~x2, x3)","(~x1, x2, ~x3)","(x1, ~x2, ~x3)","(~x1, ~x2, ~x3)"}; //  8 UNSAT full cube
-        //{"(x1, x2, x3)","(x1, ~x2, x3)", "(~x1, x2,~x3)", "(~x1, ~x2, ~x3)"};
 
-        
+    vector<vector<string>> SATformulas = {
+        // SAT #1  (∃x1 ∀x2 ∃x3 ∀x4)
+        {"(~x3, x2)", "(x3, ~x2)", "(x1, x4)", "(x1, ~x4)", "(x1, x2)", "(x1, ~x2)"},
+
+        // SAT #2  (∃x1 ∀x2 ∃x3 ∀x4)
+        {"(x3, x2)", "(x3, ~x2)", "(x1, x4)", "(x1, ~x4)"},
+
+        // SAT #3  (∃x1 ∀x2 ∃x3 ∀x4)
+        {"(x3, x2)", "(~x3, ~x2)", "(x1, x4)", "(x1, ~x4)", "(x1, x3)"},
+
+        // SAT #4  (∃x1 ∀x2 ∃x3 ∀x4)
+        {"(x1, x2)", "(x1, ~x2)", "(x3, x4)", "(x3, ~x4)"},
+
+        // SAT #5  (∃x1 ∀x2 ∃x3 ∀x4)
+        {"(x1, x2)", "(x1, ~x2)", "(x3, x4)", "(x3, ~x4)", "(~x1, x3)", "(x1, x3)"},
+
+        // SAT #6  (∃x1 ∀x2 ∃x3 ∀x4 ∃x5 ∀x6)
+        {"(x1, x6)", "(x1, ~x6)", "(~x3, x2)", "(x3, ~x2)", "(~x5, x4)", "(x5, ~x4)"},
+
+        // SAT #7  (∃x1 ∀x2 ∃x3 ∀x4 ∃x5 ∀x6)
+        {"(x1, x6)", "(x1, ~x6)", "(x3, x2)", "(x3, ~x2)", "(x5, x4)", "(x5, ~x4)"},
+
+        // SAT #8  (∃x1 ∀x2 ∃x3 ∀x4 ∃x5 ∀x6)
+        {"(x1, x6)", "(x1, ~x6)", "(x3, x2)", "(~x3, ~x2)", "(~x5, x4)", "(x5, ~x4)"},
+
+        // // SAT #9  (∃x1 ∀x2 ∃x3 ∀x4 ∃x5 ∀x6)
+        // {"(x1, x2)", "(x1, ~x2)", "(x1, x6)", "(x1, ~x6)", "(x3, x4)", "(x3, ~x4)", "(x5, x4)", "(~x5, ~x4)"},
+
+        // // SAT #10 (∃x1 ∀x2 ∃x3 ∀x4 ∃x5 ∀x6)
+        // {"(x1, x6)", "(x1, ~x6)", "(~x3, x2)", "(x3, ~x2)", "(x5, x4)", "(x5, ~x4)", "(x3, x5)"}
+    };
+
+    vector<vector<string>> UNSATformulas = {
+        // UNSAT #1 (∃x1 ∀x2 ∃x3 ∀x4)  // x1 ↔ x2 is breakable by ∀x2
+        {"(~x1, x2)", "(x1, ~x2)", "(x3, x4)", "(x3, ~x4)"},
+
+        // UNSAT #2 (∃x1 ∀x2 ∃x3 ∀x4)  // ∀ can set x2=0 making (x2∨x1)&(x2∨~x1) impossible
+        {"(x2, x1)", "(x2, ~x1)", "(x3, x4)", "(x3, ~x4)"},
+
+        // UNSAT #3 (∃x1 ∀x2 ∃x3 ∀x4)  // x3 ↔ x4 is breakable by ∀x4
+        {"(x1, x2)", "(x1, ~x2)", "(~x3, x4)", "(x3, ~x4)"},
+
+        // UNSAT #4 (∃x1 ∀x2 ∃x3 ∀x4)  // ∀ can set x4=0 making (x4∨x3)&(x4∨~x3) impossible
+        {"(x1, x2)", "(x1, ~x2)", "(x4, x3)", "(x4, ~x3)"},
+
+        // UNSAT #5 (∃x1 ∀x2 ∃x3 ∀x4)  // ∀ can set x2=1 making (~x2∨x1)&(~x2∨~x1) impossible
+        {"(~x2, x1)", "(~x2, ~x1)", "(x3, x4)", "(x3, ~x4)"},
+
+        // UNSAT #6 (∃x1 ∀x2 ∃x3 ∀x4 ∃x5 ∀x6)  // x5 ↔ x6 breakable by ∀x6
+        {"(x1, x2)", "(x1, ~x2)", "(x3, x4)", "(x3, ~x4)", "(~x5, x6)", "(x5, ~x6)"},
+
+        // UNSAT #7 (∃x1 ∀x2 ∃x3 ∀x4 ∃x5 ∀x6)  // ∀ can set x6=0 making (x6∨x5)&(x6∨~x5) impossible
+        {"(x1, x2)", "(x1, ~x2)", "(~x3, x2)", "(x3, ~x2)", "(x6, x5)", "(x6, ~x5)"},
+
+        // UNSAT #8 (∃x1 ∀x2 ∃x3 ∀x4 ∃x5 ∀x6)  // ∀ can set x6=1 making (~x6∨x5)&(~x6∨~x5) impossible
+        {"(x1, x2)", "(x1, ~x2)", "(x3, x4)", "(x3, ~x4)", "(~x6, x5)", "(~x6, ~x5)"},
+
+        // UNSAT #9 (∃x1 ∀x2 ∃x3 ∀x4 ∃x5 ∀x6)  // x3 ↔ x4 breakable by ∀x4 (extra clauses irrelevant)
+        {"(x1, x6)", "(x1, ~x6)", "(x1, x2)", "(x1, ~x2)", "(~x3, x4)", "(x3, ~x4)", "(x5, x4)", "(x5, ~x4)"},
+
+        // UNSAT #10(∃x1 ∀x2 ∃x3 ∀x4 ∃x5 ∀x6)  // ∀ can kill via x2=0 and/or x6=0
+        {"(x2, x1)", "(x2, ~x1)", "(~x3, x2)", "(x3, ~x2)", "(x6, x5)", "(x6, ~x5)"}
+    };
+
      
     
     
@@ -154,7 +230,7 @@ int main(){
     //print_graph_edges(T, W);              // list with margins
     //print_margin_matrix(T, W);            // NxN margin table
     // print_graph_dot(T, W);
-    print_edges_by_weight(T, W);
+    // print_edges_by_weight(T, W);
 
 
     if (winner>=0){
@@ -166,66 +242,29 @@ int main(){
         cout << "No winner found.\n";
     }
 
-    cout << "\n--- Subtournament Tests ---\n";
+    // cout << "\n--- Testing SAT/UNSAT Formulas ---\n";
+    for (const auto& sat : SATformulas)   run_formula(sat, "SAT formula:", W);
+    for (const auto& uns : UNSATformulas) run_formula(uns, "UNSAT formula:", W);
 
-    cout << "Valid assignmets:\n";
+    // cout << "\n--- Subtournament Tests ---\n";
 
-    vector<vector<string>> keepValid = {
-    {"C","R","T1","T2","T3","X1","X2","X3","L1","L2","L3","L4","L5","L6","L7"},
-    {"C","R","T1","T2","T3","X2","X3","L1","L2","L3","L4","L5","L6","L7"},
-    {"C","R","T1","T2","T3","X2","X3","L1","L2","L3","L4","L5","L6","L7"},
-    {"C","R","T1","T2","T3","X3","L1","L2","L3","L4","L5","L6","L7"},
-    {"C","R","T1","T2","T3","L1","L2","L3","L4","L5","L6","L7"},
+    // cout << "Valid assignmets:\n";
 
-    {"C","T1","T2","T3","X2","X3","L1","L2","L3","L4","L5","L6","L7"},
-    {"C","T1","T2","T3","X2","X3","L1","L2","L3","L4","L5","L6","L7"},
-    {"C","T1","T2","T3","X3","L1","L2","L3","L4","L5","L6","L7"},
-    {"C","T1","T2","T3","L1","L2","L3","L4","L5","L6","L7"},
-
-
-    {"C","R","T1","T2","T3","X2","X3","L1","L2","L6"},
-    {"C","R","T1","T2","T3","X2","X3","L1","L2","L6"},
-    {"C","R","T1","T2","T3","X2","L1","L2","L6"},
-    {"C","R","T1","T2","T3","L1","L2","L6"},
-    
-
+    vector<vector<string>> keepValid = { {"C","F1","F2","F3","F4","X1","X2","X3","L1","L2","L3","L4","L5","L6"},
+    // {"F1","F2","F3","F4","L1","L2","L3","L4","L5","L6","X2","X3","X4"},
+    // {"T1","T2","T3","T4","L1","L2","L3","L4","L5","L6","X1","X2","X3","X4"},
+    // {"F1","F2","F3","F4","L1","L2","L3","L4","L5","L6","X1","X2","X4"},
+    // {"F1","F2","F4","L1","L2","L3","L4","L5","L6","X1","X2","X4"},
+    // {"F1","F2","F3","F4","L1","L2","L3","L4","L5","L6","X1","X2"},
 
     
-    
-    // {"C","R","T1","T2","T3","T4","T5","T6","X1","X2","X3","X4","X5","X6"},
-    // {"C","R","F1","F2","F3","X1","X2","X3","L1"},
-    
-    
-    
-
-    // {"C","R","F1","F2","F3","X1","X2","X3","L1","L2","L3","L4","L5","L7","L8"},
-    // {"C","R","T1","F2","F3","X1","X2","X3","L1","L2","L3","L4","L5","L6","L7","L8"},
-    // {"C","R","T1","T2","T3","F1","F2","F3","X1","X2","X3","L1","L2","L3","L4","L5","L6","L7","L8"},
-    // {"C","R","T1","T2","T3","F1","F2","F3","X1","X2","X3","L1","L2","L3","L4","L5","L6","L7","L8"},
-    // {"C","R","T1","T2","T3","F1","F2","F3","X1","X2","X3","L1","L2","L3","L4","L5","L6","L7","L8"},
-    // {"C","R","T1","T2","T3","F1","F2","F3","X1","X2","X3","L1","L2","L3","L4","L5","L6","L7","L8"},
-     
-    // {"C","R","F1","T2","F3","F4","F5","X1","X2","X3","X4","X5","X6","L1","L2","L3"},
-    // {"C","R","T1","T2","T3","F1","F2","F3","X1","X2","X3","L2","L3","L4","L5","L6","L7","L8"},
-    // {"C","R","F1","T2","T3","X1","X2","X3","L2","L3","L4","L5","L6","L7","L8"},
-    // {"C","R","T1","F1","X1","X2","X3","L2","L3","L4","L5","L6","L7","L8"},
-    // {"C","R","T1","T2","T3","F1","F2","F3","X1","X2","X3","L1","L3","L4","L5","L6","L7","L8"},
-    // {"C","R","T1","T2","T3","F1","F2","F3","X1","X2","X3","L1","L2","L4","L5","L6","L7","L8"},
-    // {"C","R","T1","T2","T3","F1","F2","F3","X1","X2","X3","L1","L2","L3","L5","L6","L7","L8"},
-    // {"C","R","T1","T2","T3","F1","F2","F3","X1","X2","X3","L1","L2","L3","L4","L6","L7","L8"},
-    // {"C","R","T1","T2","T3","F1","F2","F3","X1","X2","X3","L1","L2","L3","L4","L5","L7","L8"},
-    // {"C","R","T1","T2","T3","F1","F2","F3","X1","X2","X3","L1","L2","L3","L4","L5","L6","L8"},
-    // {"C","R","T1","T2","T3","F1","F2","F3","X1","X2","X3","L1","L2","L3","L4","L5","L6","L7"},
-    
-
-
-        // {"C", "T1", "F3", "F4", "F5", "F6", "L1", "L2", "L3", "L4","X1", "X2","X3", "X4", "X5", "X6"},
-        // {"C", "T1", "T3", "F3", "T4", "F4", "T5", "F5", "T6", "F6", "L1", "L2", "L3", "L4","X1", "X2", "X3", "X4", "X5", "X6"},
-        // {"C", "T1", "F3", "F5", "F6", "L1", "L2", "L3", "L4","X1", "X2", "X3", "X4", "X5", "X6"},
-        // {"C", "T1", "F3", "F4", "L1", "L2", "L3", "L4","X1", "X2", "X3", "X4", "X5", "X6"},
-        // {"C", "T1", "F3", "F4", "F5", "F6",  "L4","X1", "X2", "X3", "X4", "X5", "X6"},
-        // {"C", "T1", "F3", "F4", "F5", "F6", "L1", "L2", "L3", "L4","X1", "X2", "X5", "X6"},
-        // {"C", "T1", "F3", "F4", "F5", "L3", "L4","X1", "X2", "X3", "X4", "X5", "X6"},
+    // {"C","F1","F2","F4","L1","L2","L3","L4","L5","L6","X1","X2","X4"},
+    // {"R","F1","F2","F3","F4","X1","X2","X3","X4"}
+    // {"C","R","T1","T2","T3","X2","X3","L1","L2","L3","L4","L5","L6","L7"},
+    // {"C","R","T1","T2","T3","X2","X3","L1","L2","L3","L4","L5","L6","L7"},
+    // {"C","R","T1","T2","T3","X3","L1","L2","L3","L4","L5","L6","L7"},
+    // {"C","R","T1","T2","T3","L1","L2","L3","L4","L5","L6","L7"},
+    // {"C", "T1", "F3", "F4", "F5", "L3", "L4","X1", "X2", "X3", "X4", "X5", "X6"},
     };   
 
     for (const auto& keep : keepValid) {
