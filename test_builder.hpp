@@ -27,7 +27,6 @@ static AI void tmpl_add_edge(GraphTemplate& T, int u,int v, int g, int16_t& cur_
     T.off[iuv] = cur_d--;
 }
 
-// ITERATION 1
 // Build tournament template from a clause set (vector<literals>)
 // 12 effective weight groups (g0..g11). Conceptual groups 9–11 share g8 with jumps.
 static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bool>>>& clauses){
@@ -36,8 +35,6 @@ static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bo
     int n = 0; // infer max var
     for (auto& c : clauses) for (auto [v,_] : c) n = max(n, v);
     T.m = m; T.n = n;
-
-
 
     // index layout: [C][R][L1..Lm][T1..Tn][F1..Fn][X1..Xn]
     int idxC = 0;

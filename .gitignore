@@ -1,7 +1,7 @@
 *.exe
 __pycache__/
+.vscode/*
 *.out
 a
-
 sv
 stablevoting
