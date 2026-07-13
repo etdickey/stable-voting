@@ -29,7 +29,7 @@ static AI void tmpl_add_edge(GraphTemplate& T, int u,int v, int g, int16_t& cur_
 
 // ITERATION 1
 // Build tournament template from a clause set (vector<literals>)
-// 11 effective weight groups (g0..g10). Conceptual groups 9–11 share g8 with jumps.
+// 12 effective weight groups (g0..g11). Conceptual groups 9–11 share g8 with jumps.
 static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bool>>>& clauses){
     GraphTemplate T;
     int m = (int)clauses.size();
@@ -37,7 +37,7 @@ static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bo
     for (auto& c : clauses) for (auto [v,_] : c) n = max(n, v);
     T.m = m; T.n = n;
 
-    
+
 
     // index layout: [C][R][L1..Lm][T1..Tn][F1..Fn][X1..Xn]
     int idxC = 0;
@@ -69,7 +69,7 @@ static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bo
     // g0..g10 (11 groups total); conceptual 9..11 share g8
     int16_t cur[12];
     for (int g=0; g<12; ++g) cur[g] = -1;
-    
+
     auto L=[&](int k){ return baseL + k; };
     auto Tn=[&](int i){ return baseT + i; };
     auto Fn=[&](int i){ return baseF + i; };
@@ -78,7 +78,7 @@ static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bo
     // int CURRENT_GROUP_PRIORITY_IDX = 10;
     int CGP_IDX = 11;
 
- // ---- g0: C -> Fi, Ti ----
+    // ---- g0: C -> Fi, Ti ----
     for (int i=0;i<n;++i){
         tmpl_add_edge(T, idxC, Fn(i), CGP_IDX, cur[CGP_IDX]);
         tmpl_add_edge(T, idxC, Tn(i), CGP_IDX, cur[CGP_IDX]);
@@ -94,8 +94,8 @@ static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bo
         tmpl_add_edge(T, Tn(i), Xn(i), CGP_IDX, cur[CGP_IDX]);
     }
     CGP_IDX--;
-    
-    
+
+
     // ---- g2: {Ti,Fj in clause k} -> Lk ---- //ORIGINAL
     // NO---- g2: {Ti,Fj in clause k} <- Lk ----
     for (int k=0;k<m;++k){
@@ -106,7 +106,7 @@ static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bo
         }
     }
     CGP_IDX--;
-    
+
     // ---- g3: Lk -> {Fi, Tj not in clause k}, opposite for those in it ---- //ORIGINAL
     // NO ---- g3: Lk <- {Fi, Tj not in clause k}, opposite for those in it ----
     for (int k=0;k<m;++k){
@@ -129,7 +129,7 @@ static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bo
         }
     }
     CGP_IDX--;
-    
+
     // ---- g4: Xj -> {Fi, Ti for all i != j} ----
     for (int j=0;j<n;++j){
         for (int i=0;i<n;++i) if (i!=j){
@@ -138,30 +138,28 @@ static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bo
         }
     }
     CGP_IDX--;
-    
+
     // ---- g5: Xj -> Lk for all i,k ----
     for (int i=0;i<n;++i) for (int k=0;k<m;++k){
         tmpl_add_edge(T, Xn(i), L(k), CGP_IDX, cur[CGP_IDX]);
     }
 
-    
-    
+
+
     CGP_IDX--;
-    
+
     // ---- g6: Lk -> C ---- R -> Lk
     for (int k=0;k<m;++k) tmpl_add_edge(T, L(k), idxC, CGP_IDX, cur[CGP_IDX]);
     for (int k=0;k<m;++k) tmpl_add_edge(T, idxR, L(k), CGP_IDX, cur[CGP_IDX]);
     CGP_IDX--;
-    
+
     // ---- g7: Xi -> C ----
     for (int i=0;i<n;++i) tmpl_add_edge(T, Xn(i), idxC, CGP_IDX, cur[CGP_IDX]);
     for (int i=0;i<n;++i) tmpl_add_edge(T, Xn(i), idxR, CGP_IDX, cur[CGP_IDX]);
     CGP_IDX--;
 
 
-    
-   
-    
+
     // ---- g8 (shared by conceptual 9..11) ----
     // 9: Fi -> Ti; Fi -> Tj (j>i); Ti -> Fj (j>i)
     for (int i=0;i<n;++i){
@@ -204,16 +202,14 @@ static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bo
     for (int i=0;i<m;++i) for (int j=i+1;j<m;++j){
         tmpl_add_edge(T, L(i), L(j), CGP_IDX, cur[CGP_IDX]);
     }
-    
+
     CGP_IDX--;
 
     // ---- g11: C -> R ----
     tmpl_add_edge(T, idxC, idxR, CGP_IDX, cur[CGP_IDX]);
-    
-    
 
-    
+
+
+
     return T;
 }
-
-
