@@ -80,10 +80,18 @@ static GraphTemplate build_template_from_clauses(const vector<vector<pair<int,bo
 
     // ---- g0: C -> Fi, Ti ----
     for (int i=0;i<n;++i){
-        tmpl_add_edge(T, idxC, Fn(i), CGP_IDX, cur[CGP_IDX]);
-        tmpl_add_edge(T, idxC, Tn(i), CGP_IDX, cur[CGP_IDX]);
-        tmpl_add_edge(T, idxR, Fn(i), CGP_IDX, cur[CGP_IDX]);
-        tmpl_add_edge(T, idxR, Tn(i), CGP_IDX, cur[CGP_IDX]);
+        //if i is odd then first goes to C then to R, else first to R then to C
+        if (i%2==0){
+            tmpl_add_edge(T, idxC, Fn(i), CGP_IDX, cur[CGP_IDX]);
+            tmpl_add_edge(T, idxC, Tn(i), CGP_IDX, cur[CGP_IDX]);
+            tmpl_add_edge(T, idxR, Fn(i), CGP_IDX, cur[CGP_IDX]);
+            tmpl_add_edge(T, idxR, Tn(i), CGP_IDX, cur[CGP_IDX]);
+        }else{
+            tmpl_add_edge(T, idxR, Fn(i), CGP_IDX, cur[CGP_IDX]);
+            tmpl_add_edge(T, idxR, Tn(i), CGP_IDX, cur[CGP_IDX]);
+            tmpl_add_edge(T, idxC, Fn(i), CGP_IDX, cur[CGP_IDX]);
+            tmpl_add_edge(T, idxC, Tn(i), CGP_IDX, cur[CGP_IDX]);
+        }
     }
     CGP_IDX--;
 
