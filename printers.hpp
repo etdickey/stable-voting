@@ -6,6 +6,7 @@
 // self
 #include "graph_template.hpp"
 #include "fast_utils.hpp"
+#include "formula_suites.hpp"
 
 #if defined(__GNUC__) || defined(__clang__)
   #define AI inline __attribute__((always_inline))
@@ -13,6 +14,7 @@
   #define AI inline
 #endif
 
+using namespace formula_suites;
 
 // ==================================== Printers ==============================
 // // Assume you have GraphTemplate T and an int Wperm[11] in scope:
@@ -98,6 +100,35 @@ void print_sat_cases(const vector<GraphTemplate>& T_sat, vector<SVFast>& sol_sat
             cout << "\n     elim=" << get_elim_order_string(elim, T);
         }
         cout << "\n";
+    }
+}
+
+static void print_formula_cases(const char* heading, const vector<const FormulaCase*>& cases,
+            const vector<GraphTemplate>& templates, vector<SVFast>& solvers,
+            const int* weights) {
+
+    cout << heading << " (" << cases.size() << "):\n";
+    for (size_t i = 0; i < cases.size(); ++i) {
+        const FormulaCase& test_case = *cases[i];
+        const GraphTemplate& graph = templates[i];
+        SVFast& solver = solvers[i];
+
+        solver.reset_epoch(weights);
+        const int winner = solver.solve_winner(graph.full_mask);
+
+        cout << "  [" << test_case.name << "] expected="
+             << formula_suites::expected_outcome_name(test_case)
+             << " assignment=" << assignment_string(test_case) << "\n"
+             << "     " << join_clauses(test_case.clauses) << "\n"
+             << "     winner=" << (winner >= 0 ? graph.names[winner] : string("None"));
+
+        if (winner >= 0) {
+            vector<int> elimination_order;
+            solver.reconstruct(graph.full_mask, winner, elimination_order);
+            cout << "\n     elim="
+                 << get_elim_order_string(elimination_order, graph);
+        }
+        cout << '\n';
     }
 }
 

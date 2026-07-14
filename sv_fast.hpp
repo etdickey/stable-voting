@@ -1,4 +1,11 @@
 // sv_fast.h
+/* Note: this is the high-performance rewrite (competitive-programming style)
+* - No regex, minimal strings, zero heap churn in hot paths
+* - Bitmask DP memo (O(2^N)) with epoch tagging (O(1) clears)
+* - Prebuilt tournament template with group+offset per directed edge
+* - Per-permutation margins computed on-the-fly from group weights
+* - Optional "diff" reconstruction using memoized winners
+*/
 #pragma once
 
 #include <vector>
@@ -6,13 +13,11 @@
 
 // self
 #include "graph_template.hpp"
+#include "fast_utils.hpp"
 
-#if defined(__GNUC__) || defined(__clang__)
-  #define AI inline __attribute__((always_inline))
-#else
-  #define AI inline
+#ifndef SV_CHECK_DEFEATS
+#define SV_CHECK_DEFEATS 0 //0 runs SSV, 1 runs SV
 #endif
-
 
 // ========================= Stable Voting (fast) =========================
 struct SVFast {
@@ -26,7 +31,7 @@ struct SVFast {
     //-------choose SV or SSV-------
     // true = Stable Voting
     // false = Simple Stable Voting
-    static const bool CHECK_DEFEATS = false;
+    static constexpr bool CHECK_DEFEATS = SV_CHECK_DEFEATS;
     // If prioritized and SV (not simple), may fail to produce a winner
     static const bool MAY_FAIL = (RULE == 1 && CHECK_DEFEATS == true);
     // Mask of T/F nodes (only needed if RULE == 1)
@@ -99,10 +104,13 @@ struct SVFast {
 
         TF_MASK = G.tf_mask; //load the TF mask directly from the template
         // tf_total is the *initial* number of T/F nodes we care about
-        max_tf_state = popcount64(TF_MASK);
-        size_t total_states = S * size_t(max_tf_state + 1);
-        memo_winner_tf.assign(total_states, -2);
-        memo_epoch_tf.assign(total_states, 0);
+        if constexpr (RULE == 1) {
+            max_tf_state = popcount64(TF_MASK);
+            const size_t total_states = S * size_t(max_tf_state + 1);
+
+            memo_winner_tf.assign(total_states, -2);
+            memo_epoch_tf.assign(total_states, 0);
+        }
     }
 
     void prepare_for_weights(const int* W) {

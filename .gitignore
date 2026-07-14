@@ -1,5 +1,6 @@
 __pycache__/
 .vscode/*
+Records/tmp*
 
 *.exe
 *.out
