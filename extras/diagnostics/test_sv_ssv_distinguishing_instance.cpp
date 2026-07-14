@@ -3,8 +3,8 @@
  * @brief Regression instance on which SSV elects a and SV elects b.
  *
  * Build both modes:
- *   g++ -std=c++20 -O2 -DSV_CHECK_DEFEATS=0 test_sv_ssv_distinguishing_instance.cpp -o test_ssv
- *   g++ -std=c++20 -O2 -DSV_CHECK_DEFEATS=1 test_sv_ssv_distinguishing_instance.cpp -o test_sv
+ *   g++ -std=c++20 -O2 -DSV_CHECK_DEFEATS=0 test_sv_ssv_distinguishing_instance.cpp -o test_ssv && test_ssv.exe
+ *   g++ -std=c++20 -O2 -DSV_CHECK_DEFEATS=1 test_sv_ssv_distinguishing_instance.cpp -o test_sv && test_sv.exe
  */
 
 #include <algorithm>
@@ -19,9 +19,9 @@
 
 using namespace std;
 
-#include "fast_utils.hpp"
-#include "graph_template.hpp"
-#include "sv_fast.hpp"
+#include "../../include/fast_utils.hpp"
+#include "../../include/graph_template.hpp"
+#include "../../include/sv_fast.hpp"
 
 namespace {
     void initialize_graph(GraphTemplate& G, const vector<string>& names) {
