@@ -13,7 +13,7 @@ void init_template(GraphTemplate& G, vector<string> &names){
     G.dir.assign(G.N * G.N, 0);  //direction of edges
     G.group.assign(G.N * G.N, 0);//groups are used in the QBF gadget and are heavily integrated
     G.off.assign(G.N * G.N, 0);  //weight/margin of edges
-    G.full_mask = (1ull << G.N) - 1ull;//max number of candidates: 64
+    G.full_mask = (1ull << G.N) - 1ull;//max number of candidates: 63
 }
 
 GraphTemplate getBasicExample(){
