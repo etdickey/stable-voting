@@ -1,4 +1,5 @@
-# hopefully real plotting
+# Visualizes the current TQBF tournament construction.
+# This file intentionally does not import extras/legacy/stablevoting.py.
 import os, re, random
 import networkx as nx
 from typing import Dict, Tuple, Set, List, Optional, Iterable, Union
