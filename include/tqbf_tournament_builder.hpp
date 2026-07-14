@@ -14,9 +14,9 @@ AI constexpr int index_to_paper_group(int group_index) {
 
 static AI void tmpl_init(GraphTemplate& T, int N){
     T.N = N;
-    T.dir.assign((size_t)N*(size_t)N, 0);
-    T.group.assign((size_t)N*(size_t)N, 0);
-    T.off.assign((size_t)N*(size_t)N, 0);
+    T.dir.assign((size_t)(N*N), 0);
+    T.group.assign((size_t)(N*N), 0);
+    T.off.assign((size_t)(N*N), 0);
     T.full_mask = (N == 64 ? ~0ull : ((1ull << N) - 1ull));// all candidates in this tournament
     // names is reset in build_template_from_clauses
 }
