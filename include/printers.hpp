@@ -126,7 +126,7 @@ AI void print_margin_matrix(const GraphTemplate& graph, const int* weights,
 // If W == nullptr, labels show "g:off". If W provided, shows "m=...".
 AI void print_graph_dot(const GraphTemplate& graph, const int* weights = nullptr,
                         ostream& out = cout) {
-    const int N = T.N;
+    const int N = graph.N;
     out << "digraph G {\n  rankdir=LR;\n";
     for (const string& name : graph.names) {
         out << "  \"" << name << "\";\n";
@@ -160,7 +160,7 @@ AI void print_edges_by_weight(const GraphTemplate& graph,
                               ostream& out = cout,
                               bool descending = true,
                               size_t max_edges = numeric_limits<size_t>::max()) {
-    const int N = T.N;
+    const int N = graph.N;
     vector<EdgeRecord> edges;
     edges.reserve((size_t)N * (N - 1) / 2);
 
