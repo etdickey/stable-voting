@@ -1,3 +1,4 @@
+"""Return a permutation by zero-based lexicographic rank."""
 import math
 
 def nth_permutation(seq, n):
