@@ -1,0 +1,21 @@
+phase,seconds,notes
+script initialization and imports,1.7005284000042593,
+argument parsing and environment checks,0.04097189998719841,
+tournament generation,0.004381299993838184,
+C++ SSV compilation,3.3261757000000216,
+C++ SV compilation,3.3801313000003574,
+C++ SSV input serialization,0.0020893000037176535,
+C++ SSV benchmark subprocess,7.0512057000014465,"includes helper input parsing, warm-ups, repeats, and process overhead"
+C++ SSV output parsing,0.00019780000729952008,
+C++ SV input serialization,0.001906400008010678,
+C++ SV benchmark subprocess,7.9990396999928635,"includes helper input parsing, warm-ups, repeats, and process overhead"
+C++ SV output parsing,0.0003892999957315624,
+pref_voting MarginGraph construction,0.0190054999984568,
+pref_voting SSV benchmark calls,832.373254799968,"includes one warm-up, garbage collection, and all timed repeats"
+pref_voting SV benchmark calls,777.5690147000714,"includes one warm-up, garbage collection, and all timed repeats"
+pref_voting loop/progress overhead,32.796844699958456,
+winner validation and aggregation,0.0013478000037139282,
+summary and raw CSV output,0.004744700010633096,
+plot output,0.46358470000268426,
+other benchmark overhead,0.005316399983712472,"temporary-directory handling, printing, and other small unmeasured work"
+total benchmark through primary outputs,1666.7401300999918,excludes only writing this timing report and final status lines

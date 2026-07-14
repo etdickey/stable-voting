@@ -389,10 +389,10 @@ def print_table(summary: list[dict]) -> None:
                 f"{row['candidates']:>3} | {row['tournaments']:>5} | "
                 f"{row[f'cpp_ssv{suffix}_ms']:>11.6g} | "
                 f"{row[f'pref_ssv{suffix}_ms']:>11.6g} | "
-                f"{row[f'ssv{suffix}_speedup']:>7.3g} | "
+                f"{row[f'ssv{suffix}_speedup']:>7.{'1f' if row[f'ssv{suffix}_speedup'] >= 10 else '3g'}} | "
                 f"{row[f'cpp_sv{suffix}_ms']:>10.6g} | "
                 f"{row[f'pref_sv{suffix}_ms']:>10.6g} | "
-                f"{row[f'sv{suffix}_speedup']:>7.3g}"
+                f"{row[f'sv{suffix}_speedup']:>7.{'1f' if row[f'ssv{suffix}_speedup'] >= 10 else '3g'}}"
             )
 
     print_statistic("Median of per-tournament medians", "")
@@ -489,9 +489,9 @@ def main() -> int:
           f"{args.tournaments} tournaments/size; {args.repeats} timed calls/tournament")
     print(f"  pref_voting algorithms: SSV={args.pref_ssv_algorithm}, SV={args.pref_sv_algorithm}\n")
 
-    print(f"  (each tournament is represented by the median of its {args.repeats} repeats; "
-          f"for each size we report both the median and arithmetic mean across "
-          f"the {args.tournaments} tournaments)")
+    print(f"  (each tournament is represented by the median of its {args.repeats} repeats;\n"
+          f"   for each size we report both the median and arithmetic mean across the {args.tournaments} tournaments)\n")
+
     print("  Warm-ups, all repeats, compilation, graph construction, and harness overhead "
           "are reported separately below.\n")
 

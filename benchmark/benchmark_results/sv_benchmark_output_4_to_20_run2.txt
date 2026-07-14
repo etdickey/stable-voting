@@ -1,0 +1,171 @@
+python benchmark_pref_voting.py --max-candidates 20 --repeats 9 --output benchmark_results/sv_benchmark
+Platform: Windows-11-10.0.26200-SP0
+Python: 3.13.7; compiler: g++ (x86_64-posix-seh-rev1, Built by MinGW-Builds project) 16.1.0
+
+Parameters:
+  pref_voting 1.16.28; seed=20260714; candidates=4..20; 5 tournaments/size; 9 timed calls/tournament
+  pref_voting algorithms: SSV=basic, SV=with_condorcet_check_and_early_termination
+
+  (each tournament is represented by the median of its 9 repeats;
+   for each size we report both the median and arithmetic mean across the 5 tournaments)
+
+  Warm-ups, all repeats, compilation, graph construction, and harness overhead are reported separately below.
+
+benchmarked 1/85: N=4, sample=0, wall=0.073s (graph=0.000s, SSV=0.037s, SV=0.036s)
+benchmarked 2/85: N=4, sample=1, wall=0.074s (graph=0.000s, SSV=0.037s, SV=0.036s)
+benchmarked 3/85: N=4, sample=2, wall=0.074s (graph=0.000s, SSV=0.038s, SV=0.036s)
+benchmarked 4/85: N=4, sample=3, wall=0.073s (graph=0.000s, SSV=0.038s, SV=0.035s)
+benchmarked 5/85: N=4, sample=4, wall=0.074s (graph=0.000s, SSV=0.037s, SV=0.036s)
+benchmarked 6/85: N=5, sample=0, wall=0.074s (graph=0.000s, SSV=0.039s, SV=0.035s)
+benchmarked 7/85: N=5, sample=1, wall=0.074s (graph=0.000s, SSV=0.037s, SV=0.037s)
+benchmarked 8/85: N=5, sample=2, wall=0.078s (graph=0.000s, SSV=0.041s, SV=0.038s)
+benchmarked 9/85: N=5, sample=3, wall=0.076s (graph=0.000s, SSV=0.038s, SV=0.038s)
+benchmarked 10/85: N=5, sample=4, wall=0.076s (graph=0.000s, SSV=0.039s, SV=0.037s)
+benchmarked 11/85: N=6, sample=0, wall=0.075s (graph=0.000s, SSV=0.037s, SV=0.038s)
+benchmarked 12/85: N=6, sample=1, wall=0.076s (graph=0.000s, SSV=0.039s, SV=0.037s)
+benchmarked 13/85: N=6, sample=2, wall=0.085s (graph=0.000s, SSV=0.041s, SV=0.043s)
+benchmarked 14/85: N=6, sample=3, wall=0.078s (graph=0.000s, SSV=0.039s, SV=0.039s)
+benchmarked 15/85: N=6, sample=4, wall=0.079s (graph=0.000s, SSV=0.040s, SV=0.039s)
+benchmarked 16/85: N=7, sample=0, wall=0.085s (graph=0.000s, SSV=0.045s, SV=0.040s)
+benchmarked 17/85: N=7, sample=1, wall=0.082s (graph=0.000s, SSV=0.043s, SV=0.040s)
+benchmarked 18/85: N=7, sample=2, wall=0.091s (graph=0.000s, SSV=0.042s, SV=0.049s)
+benchmarked 19/85: N=7, sample=3, wall=0.081s (graph=0.000s, SSV=0.041s, SV=0.040s)
+benchmarked 20/85: N=7, sample=4, wall=0.085s (graph=0.000s, SSV=0.044s, SV=0.040s)
+benchmarked 21/85: N=8, sample=0, wall=0.089s (graph=0.000s, SSV=0.050s, SV=0.039s)
+benchmarked 22/85: N=8, sample=1, wall=0.082s (graph=0.000s, SSV=0.040s, SV=0.041s)
+benchmarked 23/85: N=8, sample=2, wall=0.079s (graph=0.000s, SSV=0.039s, SV=0.040s)
+benchmarked 24/85: N=8, sample=3, wall=0.129s (graph=0.000s, SSV=0.058s, SV=0.070s)
+benchmarked 25/85: N=8, sample=4, wall=0.084s (graph=0.000s, SSV=0.044s, SV=0.041s)
+benchmarked 26/85: N=9, sample=0, wall=0.095s (graph=0.000s, SSV=0.041s, SV=0.053s)
+benchmarked 27/85: N=9, sample=1, wall=0.086s (graph=0.000s, SSV=0.046s, SV=0.040s)
+benchmarked 28/85: N=9, sample=2, wall=0.133s (graph=0.000s, SSV=0.050s, SV=0.081s)
+benchmarked 29/85: N=9, sample=3, wall=0.089s (graph=0.000s, SSV=0.042s, SV=0.046s)
+benchmarked 30/85: N=9, sample=4, wall=0.080s (graph=0.000s, SSV=0.041s, SV=0.039s)
+benchmarked 31/85: N=10, sample=0, wall=0.162s (graph=0.000s, SSV=0.055s, SV=0.106s)
+benchmarked 32/85: N=10, sample=1, wall=0.079s (graph=0.000s, SSV=0.039s, SV=0.039s)
+benchmarked 33/85: N=10, sample=2, wall=0.149s (graph=0.000s, SSV=0.050s, SV=0.096s)
+benchmarked 34/85: N=10, sample=3, wall=0.537s (graph=0.000s, SSV=0.102s, SV=0.412s)
+benchmarked 35/85: N=10, sample=4, wall=0.113s (graph=0.000s, SSV=0.051s, SV=0.061s)
+benchmarked 36/85: N=11, sample=0, wall=0.109s (graph=0.000s, SSV=0.065s, SV=0.043s)
+benchmarked 37/85: N=11, sample=1, wall=0.213s (graph=0.000s, SSV=0.058s, SV=0.152s)
+benchmarked 38/85: N=11, sample=2, wall=0.304s (graph=0.000s, SSV=0.104s, SV=0.195s)
+benchmarked 39/85: N=11, sample=3, wall=0.180s (graph=0.000s, SSV=0.092s, SV=0.086s)
+benchmarked 40/85: N=11, sample=4, wall=0.404s (graph=0.000s, SSV=0.142s, SV=0.250s)
+benchmarked 41/85: N=12, sample=0, wall=0.659s (graph=0.000s, SSV=0.167s, SV=0.471s)
+benchmarked 42/85: N=12, sample=1, wall=0.205s (graph=0.000s, SSV=0.082s, SV=0.119s)
+benchmarked 43/85: N=12, sample=2, wall=0.106s (graph=0.000s, SSV=0.063s, SV=0.043s)
+benchmarked 44/85: N=12, sample=3, wall=0.707s (graph=0.000s, SSV=0.310s, SV=0.384s)
+benchmarked 45/85: N=12, sample=4, wall=0.311s (graph=0.000s, SSV=0.144s, SV=0.163s)
+benchmarked 46/85: N=13, sample=0, wall=1.673s (graph=0.000s, SSV=0.576s, SV=1.048s)
+benchmarked 47/85: N=13, sample=1, wall=1.009s (graph=0.000s, SSV=0.412s, SV=0.572s)
+benchmarked 48/85: N=13, sample=2, wall=0.165s (graph=0.000s, SSV=0.103s, SV=0.061s)
+benchmarked 49/85: N=13, sample=3, wall=0.795s (graph=0.000s, SSV=0.127s, SV=0.630s)
+benchmarked 50/85: N=13, sample=4, wall=0.302s (graph=0.000s, SSV=0.180s, SV=0.119s)
+benchmarked 51/85: N=14, sample=0, wall=2.196s (graph=0.000s, SSV=1.231s, SV=0.917s)
+benchmarked 52/85: N=14, sample=1, wall=0.252s (graph=0.000s, SSV=0.168s, SV=0.083s)
+benchmarked 53/85: N=14, sample=2, wall=0.210s (graph=0.001s, SSV=0.138s, SV=0.070s)
+benchmarked 54/85: N=14, sample=3, wall=2.368s (graph=0.000s, SSV=1.179s, SV=1.133s)
+benchmarked 55/85: N=14, sample=4, wall=0.858s (graph=0.000s, SSV=0.315s, SV=0.516s)
+benchmarked 56/85: N=15, sample=0, wall=0.965s (graph=0.000s, SSV=0.895s, SV=0.070s)
+benchmarked 57/85: N=15, sample=1, wall=1.965s (graph=0.000s, SSV=1.128s, SV=0.805s)
+benchmarked 58/85: N=15, sample=2, wall=3.563s (graph=0.000s, SSV=0.851s, SV=2.590s)
+benchmarked 59/85: N=15, sample=3, wall=3.526s (graph=0.000s, SSV=3.477s, SV=0.049s)
+benchmarked 60/85: N=15, sample=4, wall=1.143s (graph=0.000s, SSV=1.089s, SV=0.054s)
+benchmarked 61/85: N=16, sample=0, wall=30.546s (graph=0.000s, SSV=8.262s, SV=21.317s)
+benchmarked 62/85: N=16, sample=1, wall=4.507s (graph=0.000s, SSV=4.397s, SV=0.109s)
+benchmarked 63/85: N=16, sample=2, wall=7.877s (graph=0.001s, SSV=4.163s, SV=3.518s)
+benchmarked 64/85: N=16, sample=3, wall=5.387s (graph=0.000s, SSV=4.062s, SV=1.272s)
+benchmarked 65/85: N=16, sample=4, wall=1.575s (graph=0.000s, SSV=0.846s, SV=0.701s)
+benchmarked 66/85: N=17, sample=0, wall=14.757s (graph=0.000s, SSV=4.711s, SV=9.640s)
+benchmarked 67/85: N=17, sample=1, wall=45.195s (graph=0.000s, SSV=9.124s, SV=34.486s)
+benchmarked 68/85: N=17, sample=2, wall=0.983s (graph=0.000s, SSV=0.920s, SV=0.063s)
+benchmarked 69/85: N=17, sample=3, wall=11.422s (graph=0.000s, SSV=11.304s, SV=0.116s)
+benchmarked 70/85: N=17, sample=4, wall=11.995s (graph=0.000s, SSV=6.827s, SV=4.950s)
+benchmarked 71/85: N=18, sample=0, wall=23.334s (graph=0.000s, SSV=19.567s, SV=3.614s)
+benchmarked 72/85: N=18, sample=1, wall=15.772s (graph=0.000s, SSV=10.978s, SV=4.566s)
+benchmarked 73/85: N=18, sample=2, wall=12.842s (graph=0.000s, SSV=12.785s, SV=0.056s)
+benchmarked 74/85: N=18, sample=3, wall=14.022s (graph=0.000s, SSV=13.960s, SV=0.061s)
+benchmarked 75/85: N=18, sample=4, wall=102.516s (graph=0.000s, SSV=21.302s, SV=78.089s)
+benchmarked 76/85: N=19, sample=0, wall=83.842s (graph=0.000s, SSV=32.068s, SV=49.635s)
+benchmarked 77/85: N=19, sample=1, wall=123.003s (graph=0.000s, SSV=66.171s, SV=54.670s)
+benchmarked 78/85: N=19, sample=2, wall=22.440s (graph=0.000s, SSV=18.311s, SV=3.945s)
+benchmarked 79/85: N=19, sample=3, wall=85.141s (graph=0.000s, SSV=42.269s, SV=41.134s)
+benchmarked 80/85: N=19, sample=4, wall=176.168s (graph=0.000s, SSV=69.955s, SV=101.772s)
+benchmarked 81/85: N=20, sample=0, wall=65.957s (graph=0.001s, SSV=48.230s, SV=16.975s)
+benchmarked 82/85: N=20, sample=1, wall=283.408s (graph=0.000s, SSV=136.544s, SV=140.958s)
+benchmarked 83/85: N=20, sample=2, wall=81.014s (graph=0.000s, SSV=53.759s, SV=26.156s)
+benchmarked 84/85: N=20, sample=3, wall=55.960s (graph=0.001s, SSV=28.174s, SV=26.796s)
+benchmarked 85/85: N=20, sample=4, wall=335.349s (graph=0.000s, SSV=189.046s, SV=140.379s)
+
+Median of per-tournament medians:
+  N | cases |  C++ SSV ms | pref SSV ms |   SSV x |  C++ SV ms | pref SV ms |    SV x
+----+-------+-------------+-------------+---------+------------+------------+--------
+  4 |     5 |      0.0013 |      0.0135 |    10.4 |     0.0013 |     0.0447 |    34.4
+  5 |     5 |      0.0016 |      0.0451 |    28.2 |     0.0017 |     0.0732 |    43.1
+  6 |     5 |       0.002 |      0.1092 |    54.6 |     0.0022 |      0.118 |    53.6
+  7 |     5 |      0.0028 |      0.2169 |    77.5 |      0.003 |     0.1615 |    53.8
+  8 |     5 |      0.0044 |      0.4219 |    95.9 |     0.0055 |      0.218 |    39.6
+  9 |     5 |      0.0042 |      0.4471 |   106.5 |     0.0073 |     0.9742 |   133.5
+ 10 |     5 |       0.012 |      1.0002 |    83.4 |     0.0154 |     5.7331 |   372.3
+ 11 |     5 |      0.0603 |      5.3023 |    87.9 |     0.0764 |    12.0331 |   157.5
+ 12 |     5 |      0.1078 |     10.0773 |    93.5 |      0.133 |    12.3183 |    92.6
+ 13 |     5 |      0.1947 |     14.3059 |    73.5 |     0.2276 |    53.5342 |   235.2
+ 14 |     5 |      0.3978 |     26.7874 |    67.3 |     0.5101 |    47.3131 |    92.8
+ 15 |     5 |      1.0469 |     104.231 |    99.6 |     1.2598 |     3.0536 |     2.4
+ 16 |     5 |      3.5486 |     400.763 |   112.9 |     4.2113 |    123.754 |    29.4
+ 17 |     5 |      6.1118 |     677.506 |   110.9 |     7.5056 |     491.01 |    65.4
+ 18 |     5 |     12.8597 |      1381.3 |   107.4 |    14.3982 |    356.741 |    24.8
+ 19 |     5 |     36.0658 |     4198.47 |   116.4 |    41.7167 |    4941.02 |   118.4
+ 20 |     5 |     47.5999 |     5343.75 |   112.3 |    52.8143 |    2676.23 |    50.7
+
+Arithmetic mean of per-tournament medians:
+  N | cases |  C++ SSV ms | pref SSV ms |   SSV x |  C++ SV ms | pref SV ms |    SV x
+----+-------+-------------+-------------+---------+------------+------------+--------
+  4 |     5 |     0.00132 |     0.01516 |    11.5 |    0.00132 |     0.0289 |    21.9
+  5 |     5 |      0.0016 |      0.0432 |    27.0 |    0.00166 |     0.0825 |    49.7
+  6 |     5 |       0.002 |     0.10624 |    53.1 |    0.00214 |    0.17476 |    81.7
+  7 |     5 |     0.00276 |     0.22026 |    79.8 |     0.0032 |    0.37276 |   116.5
+  8 |     5 |     0.00542 |      0.5718 |   105.5 |    0.00808 |    0.76248 |    94.4
+  9 |     5 |     0.00602 |     0.60526 |   100.5 |    0.00864 |     1.4955 |   173.1
+ 10 |     5 |     0.01998 |     1.98408 |    99.3 |    0.02936 |    10.4079 |   354.5
+ 11 |     5 |     0.05576 |     5.21262 |    93.5 |    0.07354 |    10.6524 |   144.9
+ 12 |     5 |     0.11308 |     11.1206 |    98.3 |    0.14282 |    19.6441 |   137.5
+ 13 |     5 |      0.3003 |     23.7485 |    79.1 |    0.38436 |    44.7988 |   116.6
+ 14 |     5 |     0.60588 |     56.1358 |    92.7 |    0.76614 |    50.1974 |    65.5
+ 15 |     5 |     1.32786 |     144.105 |   108.5 |    1.59376 |     66.043 |    41.4
+ 16 |     5 |     3.59688 |     422.477 |   117.5 |    4.30242 |    530.345 |   123.3
+ 17 |     5 |     6.00884 |      649.98 |   108.2 |    7.26948 |    975.339 |   134.2
+ 18 |     5 |      14.415 |     1560.81 |   108.3 |    16.6537 |    1722.75 |   103.4
+ 19 |     5 |     39.6766 |      4542.6 |   114.5 |     44.618 |    5002.04 |   112.1
+ 20 |     5 |     73.2399 |     9043.01 |   123.5 |    82.4212 |    6999.31 |    84.9
+
+At N=20, the largest per-tournament medians were 18.6777s for pref_voting SSV and 14.0537s for pref_voting SV.
+
+Wall-clock accounting (warm-ups and all repeats included):
+  script initialization and imports                  1.701s
+  argument parsing and environment checks            0.041s
+  tournament generation                              0.004s
+  C++ SSV compilation                                3.326s
+  C++ SV compilation                                 3.380s
+  C++ SSV input serialization                        0.002s
+  C++ SSV benchmark subprocess                       7.051s
+  C++ SSV output parsing                             0.000s
+  C++ SV input serialization                         0.002s
+  C++ SV benchmark subprocess                        7.999s
+  C++ SV output parsing                              0.000s
+  pref_voting MarginGraph construction               0.019s
+  pref_voting SSV benchmark calls                  832.373s
+  pref_voting SV benchmark calls                   777.569s
+  pref_voting loop/progress overhead                32.797s
+  winner validation and aggregation                  0.001s
+  summary and raw CSV output                         0.005s
+  plot output                                        0.464s
+  other benchmark overhead                           0.005s
+  ----------------------------------------------------------
+  total benchmark through primary outputs         1666.740s
+
+Summary CSV: benchmark_results\sv_benchmark.csv
+Raw CSV:     benchmark_results\sv_benchmark_raw.csv
+Timing CSV:  benchmark_results\sv_benchmark_timing.csv
+Plot:        benchmark_results\sv_benchmark.png
+Final script wall time: 1666.742s

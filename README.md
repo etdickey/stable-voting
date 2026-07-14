@@ -112,7 +112,7 @@ The benchmark gives both implementations exactly the same deterministic random t
 For each tournament, the benchmark first performs one warm-up call and then records the median of the requested timed repetitions. For each candidate count, the summary reports both the **median** and the **arithmetic mean** of those per-tournament medians. The median is robust to unusually hard instances; the mean better reflects the total runtime contributed by them. Warm-up time, the sum of all timed repetitions, graph construction, compilation, subprocess or Python-harness overhead, and total wall-clock time are recorded separately.
 
 ```bash
-python -m pip install pref_voting==1.18.2 matplotlib
+python -m pip install pref_voting==1.16.28 matplotlib
 python tools/benchmark_pref_voting.py
 ```
 
@@ -135,7 +135,16 @@ Candidate range, number of tournaments, repetitions, random seed, compiler, and 
 
 ### Reference benchmark result
 
-In one reference run on deterministic uniquely weighted tournaments with 4–20 candidates, five tournaments per size, and three timed repetitions per tournament, the C++ and `pref_voting` implementations agreed on every SV and SSV winner. At 20 candidates, the median (arithmetic mean) of the five per-tournament medians was 51.6 ms (80.6 ms) for C++ SSV versus 5.56 s (9.61 s) for `pref_voting` SSV, and 56.4 ms (88.7 ms) for C++ SV versus 2.81 s (7.28 s) for `pref_voting` SV. The corresponding ratios were approximately 108-fold (119-fold) for SSV and 50-fold (82-fold) for SV. Runtime varied substantially by tournament: the largest 20-candidate per-tournament medians were 19.6 s for `pref_voting` SSV and 15.0 s for `pref_voting` SV. These figures are machine-, version-, compiler-, and instance-specific; the CSV files, command-line parameters, and platform/compiler information printed by the script should accompany any reported result. The experiment is a reproducible implementation comparison on a fixed sample, not an estimate of average-case complexity.
+A reference run used deterministic uniquely weighted tournaments with 4–20 candidates, five tournaments per candidate count, and nine timed calls per tournament. Each tournament was represented by the median of its nine calls; the table reports the median and arithmetic mean across the five tournament-level medians. The C++ and `pref_voting` implementations agreed on every SV and SSV winner.
+
+**Results at 20 candidates**
+
+| Rule | Median: C++ / `pref_voting` | Median ratio | Mean: C++ / `pref_voting` | Mean ratio |
+|---|---:|---:|---:|---:|
+| SSV | 47.6 ms / 5.34 s | 112× | 73.2 ms / 9.04 s | 123× |
+| SV | 52.8 ms / 2.68 s | 50.7× | 82.4 ms / 7.00 s | 84.9× |
+
+The run used Windows 11, Python 3.13.7, `pref_voting` 1.16.28, and MinGW `g++` 16.1.0. Including warm-ups and all repetitions, it took 1,666.7 seconds (27.8 minutes). Runtime varied substantially across tournaments: at 20 candidates, the largest `pref_voting` tournament-level medians were 18.7 seconds for SSV and 14.1 seconds for SV. These results are machine-, version-, and instance-specific and should be interpreted as a reproducible implementation comparison on this fixed sample, not as an estimate of average-case complexity.
 
 ## Candidate limit
 
