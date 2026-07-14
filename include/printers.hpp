@@ -107,16 +107,25 @@ AI void print_graph_edges(const GraphTemplate& graph, const int* weights = nullp
 // Margin matrix: prints m(u,v) in a compact NxN table.
 // Requires W (since margins depend on weights).
 AI void print_margin_matrix(const GraphTemplate& graph, const int* weights,
-                            ostream& out = cout, int field_width = 7) {
-    out << setw(field_width) << "";
-    for (const string& name : graph.names) out << setw(field_width) << name;
+                            ostream& out = cout, int field_width = 7,
+                            bool use_pipes = false, bool hide_neg = false) {
+    string pipe = use_pipes ? " |" : "";
+
+    out << setw(field_width) << "" << pipe;
+    for (const string& name : graph.names) out << setw(field_width) << name << pipe;
     out << '\n';
+
+    if (use_pipes) {
+        for (int i = 0; i <= graph.N; ++i) out << string(field_width + 1, '-') << "|";
+        out << '\n';
+    }
+
     for (int u = 0; u < graph.N; ++u) {
-        out << setw(field_width) << graph.names[u];
+        out << setw(field_width) << graph.names[u] << pipe;
         for (int v = 0; v < graph.N; ++v) {
-            if (u == v) out << setw(field_width) << '.';
-            else out << setw(field_width)
-                        << graph.margin(u, v, weights);
+            int m = graph.margin(u, v, weights);
+            if (u == v) out << setw(field_width) << '.' << pipe;
+            else out << setw(field_width) << ((hide_neg && m < 0) ? "" : to_string(m)) << pipe;
         }
         out << '\n';
     }
