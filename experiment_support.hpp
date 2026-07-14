@@ -17,9 +17,11 @@
  */
 
 #include "fast_utils.hpp"
+#include "graph_template.hpp"
+#include "tqbf_tournament_builder.hpp"
 
 inline constexpr int STARTING_WEIGHT = 100;
-inline constexpr int NUM_GROUPS = 12; // effective weight buckets
+inline constexpr int NUM_GROUPS = GraphTemplate::kGroupCount; // effective weight buckets
 
 // ========================= Clause Parsing (fast) =========================
 // Accepts tokens like: (x1, ~x2) or x3 or ~x10; commas/parentheses/whitespace ignored

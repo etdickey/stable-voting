@@ -4,6 +4,14 @@
 // self
 #include "graph_template.hpp"
 
+AI constexpr int paper_group_to_index(int paper_group) {
+    return GraphTemplate::kGroupCount - paper_group;
+}
+
+AI constexpr int index_to_paper_group(int group_index) {
+    return GraphTemplate::kGroupCount - group_index;
+}
+
 static AI void tmpl_init(GraphTemplate& T, int N){
     T.N = N;
     T.dir.assign((size_t)N*(size_t)N, 0);
