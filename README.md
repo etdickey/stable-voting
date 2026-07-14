@@ -107,7 +107,9 @@ g++ -std=c++20 -O3 -DNDEBUG -Iinclude -DSV_CHECK_DEFEATS=1 examples/run_tourname
 
 The comparison target is Holliday and Pacuit's published `pref_voting` package (Journal of Open Source Software, 2025). The benchmark requires Python 3.10 or newer.
 
-The benchmark gives both implementations exactly the same deterministic random tournaments with distinct odd margins. Distinct margins avoid tie-breaking ambiguity, and using odd margins keeps all pairwise margins on one parity. Tournament generation and conversion are outside the timed region; each timed call includes the implementation's own solver allocation, memo setup, preprocessing, and winner calculation. The script also checks winner agreement before reporting any timings.
+The benchmark gives both implementations exactly the same deterministic random tournaments with distinct odd margins. Distinct margins avoid tie-breaking ambiguity, and using odd margins keeps all pairwise margins on one parity. Tournament generation and conversion are outside the primary solver timing; each timed call includes the implementation's own solver allocation, memo setup, preprocessing, and winner calculation. The script also checks winner agreement before reporting any timings.
+
+For each tournament, the benchmark first performs one warm-up call and then records the median of the requested timed repetitions. For each candidate count, the summary reports both the **median** and the **arithmetic mean** of those per-tournament medians. The median is robust to unusually hard instances; the mean better reflects the total runtime contributed by them. Warm-up time, the sum of all timed repetitions, graph construction, compilation, subprocess or Python-harness overhead, and total wall-clock time are recorded separately.
 
 ```bash
 python -m pip install pref_voting==1.18.2 matplotlib
@@ -117,9 +119,10 @@ python tools/benchmark_pref_voting.py
 It prints a table and writes:
 
 ```text
-sv_benchmark.csv       median results by candidate count
-sv_benchmark_raw.csv   one row per generated tournament
-sv_benchmark.png       log-scale timing plot
+sv_benchmark.csv          median and mean results by candidate count
+sv_benchmark_raw.csv      one row per generated tournament, including warm-up and wall times
+sv_benchmark_timing.csv   compilation, harness, output, and full-run wall-clock accounting
+sv_benchmark.png          log-scale timing plot
 ```
 
 By default, the benchmark uses the current `pref_voting` defaults: `basic` for SSV and `with_condorcet_check_and_early_termination` for SV. For a direct comparison of the basic recursive implementations, run:
@@ -129,6 +132,10 @@ python tools/benchmark_pref_voting.py --pref-sv-algorithm basic
 ```
 
 Candidate range, number of tournaments, repetitions, random seed, compiler, and `-march=native` are command-line options; run with `--help` for the full list.
+
+### Reference benchmark result
+
+In one reference run on deterministic uniquely weighted tournaments with 4–20 candidates, five tournaments per size, and three timed repetitions per tournament, the C++ and `pref_voting` implementations agreed on every SV and SSV winner. At 20 candidates, the median (arithmetic mean) of the five per-tournament medians was 51.6 ms (80.6 ms) for C++ SSV versus 5.56 s (9.61 s) for `pref_voting` SSV, and 56.4 ms (88.7 ms) for C++ SV versus 2.81 s (7.28 s) for `pref_voting` SV. The corresponding ratios were approximately 108-fold (119-fold) for SSV and 50-fold (82-fold) for SV. Runtime varied substantially by tournament: the largest 20-candidate per-tournament medians were 19.6 s for `pref_voting` SSV and 15.0 s for `pref_voting` SV. These figures are machine-, version-, compiler-, and instance-specific; the CSV files, command-line parameters, and platform/compiler information printed by the script should accompany any reported result. The experiment is a reproducible implementation comparison on a fixed sample, not an estimate of average-case complexity.
 
 ## Candidate limit
 
