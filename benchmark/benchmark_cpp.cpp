@@ -87,13 +87,17 @@ int main() {
     for (int i = 0; i < tournament_count; ++i) {
         GraphTemplate& G = tournaments[i];
         int winner = -1;
+        auto case_start = chrono::steady_clock::now();
 
         // One untimed call warms instruction/data caches for this tournament size.
+        auto warmup_start = chrono::steady_clock::now();
         {
             SVFast solver(G);
             solver.reset_epoch(W);
             winner = solver.solve_winner(G.full_mask);
         }
+        auto warmup_stop = chrono::steady_clock::now();
+        double warmup_seconds = chrono::duration<double>(warmup_stop - warmup_start).count();
 
         vector<double> times;
         times.reserve(repeats);
@@ -110,7 +114,14 @@ int main() {
             times.push_back(chrono::duration<double>(stop - start).count());
         }
 
-        cout << i << '\t' << G.N << '\t' << winner << '\t' << median(times) << '\n';
+        double timed_total_seconds = accumulate(times.begin(), times.end(), 0.0);
+        double median_seconds = median(times);
+        auto case_stop = chrono::steady_clock::now();
+        double wall_seconds = chrono::duration<double>(case_stop - case_start).count();
+
+        cout << i << '\t' << G.N << '\t' << winner << '\t'
+             << median_seconds << '\t' << warmup_seconds << '\t'
+             << timed_total_seconds << '\t' << wall_seconds << '\n';
     }
 
     return 0;
