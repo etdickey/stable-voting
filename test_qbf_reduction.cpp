@@ -16,7 +16,7 @@
  * nonzero exit status.
  *
  * Fast build and run:
- *   g++ -std=c++20 -O3 -march=native -flto -DNDEBUG test_qbf_reduction.cpp -o test_qbf_reduction && test_qbf_reduction
+ *   g++ -std=c++20 -O3 -march=native -flto -DNDEBUG -Iinclude test_qbf_reduction.cpp -o test_qbf_reduction && test_qbf_reduction
  *     (-O3 includes -fomit-frame-pointer)
  */
 
@@ -34,12 +34,12 @@ using namespace std;
 
 using namespace formula_suites;
 
-uint64_t mask_from_names(const GraphTemplate& T, const std::vector<std::string>& keep) {
+uint64_t mask_from_names(const GraphTemplate& T, const vector<string>& keep) {
     uint64_t mask = 0;
-    for (const std::string& nm : keep) {
-        auto it = std::find(T.names.begin(), T.names.end(), nm);
+    for (const string& nm : keep) {
+        auto it = find(T.names.begin(), T.names.end(), nm);
         if (it == T.names.end()) {
-            std::cerr << "Name not found in template: " << nm << "\n";
+            cerr << "Name not found in template: " << nm << "\n";
             continue;
         }
         int idx = int(it - T.names.begin());
@@ -49,8 +49,6 @@ uint64_t mask_from_names(const GraphTemplate& T, const std::vector<std::string>&
 }
 
 static bool run_formula(const FormulaCase& F, const int* W) {
-// static void run_formula(const vector<string>& F, const char* tag, const int* W){
-    // GraphTemplate TT = build_template_from_strings(F);
     GraphTemplate TT = build_template_from_strings(F.clauses);
     //print_graph_edges(TT, W);              // list with margins
     //print_margin_matrix(TT, W);            // NxN margin table
@@ -58,7 +56,6 @@ static bool run_formula(const FormulaCase& F, const int* W) {
     // print_edges_by_weight(TT, W);
 
     if (TT.names.size() > 64) {
-        // cerr << tag << " skipped: too many candidates (" << TT.names.size() << ")\n";
         cerr << F.name << " skipped: too many candidates (" << TT.names.size() << ")\n";
         return false;
     }
@@ -68,7 +65,6 @@ static bool run_formula(const FormulaCase& F, const int* W) {
     int win = sol.solve_winner_standard(TT.full_mask);
 
     cout << F.name << " " << " [expected " << formula_suites::expected_outcome_name(F) << "]\n  ";
-    // for (auto &cl : F) cout << cl << " ";
     for (auto &cl : F.clauses) cout << cl << " ";
     cout << "\n";
 
@@ -80,7 +76,9 @@ static bool run_formula(const FormulaCase& F, const int* W) {
     vector<int> elim;
     sol.reconstruct_standard(TT.full_mask, win, elim);
 
-    const bool passed = (TT.names[win] == "C") == formula_suites::expects_c(F);
+    const string expected = formula_suites::expects_c(F) ? "C" : "D";
+    const bool passed = TT.names[win] == expected;
+
 
     cout << "  Winner: " << TT.names[win] << "\n"
          << "  Elimination Order: " << get_elim_order_string(elim, TT) << "\n"
@@ -92,7 +90,7 @@ static bool run_formula(const FormulaCase& F, const int* W) {
 #define STABLEVOTING_MAIN true
 #ifdef STABLEVOTING_MAIN
 int main(int argc, char** argv){
-    // g++ test_qbf_reduction.cpp -std=c++20 -O3 -march=native -flto -DNDEBUG  && a.exe
+    // g++ test_qbf_reduction.cpp -std=c++20 -O3 -march=native -flto -DNDEBUG -Iinclude && a.exe
     // ios::sync_with_stdio(false); cin.tie(nullptr); //fast IO
     vector<int> Wbase;
     fibonacci_series(NUM_GROUPS, STARTING_WEIGHT, STARTING_WEIGHT*2, Wbase);
@@ -115,7 +113,7 @@ int main(int argc, char** argv){
     GraphTemplate T = build_template_from_strings(formula);
     SVFast solver(T); solver.reset_epoch(W);
 
-    cout << "=== Full Results of reference formula ===";
+    cout << "=== Full Results of reference formula ===\n";
     run_formula(reference_case, W);
 
     cout << "\n--- Testing SAT/UNSAT Formulas ---\n";
@@ -127,7 +125,7 @@ int main(int argc, char** argv){
 
     cout << "\n--- Subtournament Tests ---\n";
     vector<vector<string>> subtournaments = {
-        {"C","F1","F2","F3","F4","X1","`X2","X3","L1","L2","L3","L4","L5","L6"},
+        {"C","F1","F2","F3","F4","X1","X2","X3","L1","L2","L3","L4","L5","L6"},
         // {"F1","F2","F3","F4","L1","L2","L3","L4","L5","L6","X2","X3","X4"},
         // {"T1","T2","T3","T4","L1","L2","L3","L4","L5","L6","X1","X2","X3","X4"},
         // {"F1","F2","F3","F4","L1","L2","L3","L4","L5","L6","X1","X2","X4"},
@@ -164,6 +162,6 @@ int main(int argc, char** argv){
         cout << "\n";
     }
 
-    return 0;
+    return formula_failures == 0 ? 0 : 1;
 }
 #endif

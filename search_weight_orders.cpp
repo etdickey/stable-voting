@@ -19,7 +19,7 @@
  * may require factorial running time.
  *
  * Fast build and run:
- *   g++ -std=c++20 -O3 -march=native -flto -DNDEBUG search_weight_orders.cpp -o search_weight_orders && search_weight_orders
+ *   g++ -std=c++20 -O3 -march=native -flto -DNDEBUG -Iinclude search_weight_orders.cpp -o search_weight_orders && search_weight_orders
  *     (-O3 includes -fomit-frame-pointer)
  */
 
@@ -42,14 +42,14 @@ using FormulaCaseRefs = vector<const FormulaCase*>;
 static AI void sanity_check(const int NUM_GROUPS, vector<int> Wbase){
     // Base four clauses
     // vector<string> base = {"(x1, x2)", "(x1, ~x2)", "(~x1, x2)", "(~x1, ~x2)"};
-    const auto& base_case = require_case(two_sat_cases(), "2sat-false-01");
+    const auto& base_case = require_case(two_sat_cases(), "2sat-unsat-01");
     const auto& base = base_case.clauses;
     GraphTemplate T_all = build_template_from_strings(base); // full 4-clause set
 
     // init solver with all 4 2-sat 2-variable clauses
     // int W_all_base[NUM_GROUPS]; for (int i=0;i<NUM_GROUPS;++i) W_all_base[i]=Wbase[i];
     vector<int> W_all_base = move(Wbase);
-    if (static_cast<int>(W_all_base.size()) != NUM_GROUPS) {
+    if ((int)W_all_base.size() != NUM_GROUPS) {
         throw invalid_argument("Unexpected number of group weights");
     }
     SVFast solver_all(T_all);
@@ -88,7 +88,7 @@ static AI void get_graphs_and_solvers(const FormulaCaseRefs& cases, vector<Graph
 #define STABLEVOTING_MAIN true
 #ifdef STABLEVOTING_MAIN
 int main(int argc, char** argv){
-    // g++ search_weight_orders.cpp -std=c++20 -O3 -march=native -flto -DNDEBUG && a.exe
+    // g++ search_weight_orders.cpp -std=c++20 -O3 -march=native -flto -DNDEBUG -Iinclude && a.exe
     // ios::sync_with_stdio(false); cin.tie(nullptr); //fast IO
 
     const size_t PRINT_EVERY = 50000;  // progress cadence
@@ -134,7 +134,7 @@ int main(int argc, char** argv){
     auto t_last = chrono::steady_clock::now();
     auto START = t_last;
 
-    // Exhaustive permutations of 11 weights
+    // Exhaustive permutations of 12 weights
     size_t total_perms=1; for(int i=2;i<=NUM_GROUPS;++i) total_perms*= (size_t)i;
     cout << "Exhaustively testing " << total_perms << " permutations..." << endl;
 
@@ -144,7 +144,7 @@ int main(int argc, char** argv){
     do{
         auto t0 = chrono::steady_clock::now();
         for (int i=0;i<NUM_GROUPS;++i) Wperm[i]=W[i];
-        bool success = true, fatal_error = false;
+        bool fatal_error = false;
 
         auto check_cases = [&](const FormulaCaseRefs& cases,
                                vector<GraphTemplate>& templates,
@@ -171,8 +171,8 @@ int main(int argc, char** argv){
                     return false;
                 }
 
-                const bool c_won = graph.names[winner] == "C";
-                if (c_won != formula_suites::expects_c(test_case)) {
+                const string expected = formula_suites::expects_c(test_case) ? "C" : "D";
+                if (graph.names[winner] != expected) {
                     ++all_failures;
                     return false;
                 }

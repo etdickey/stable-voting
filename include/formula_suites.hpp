@@ -393,7 +393,7 @@ namespace formula_suites {
         static const vector<FormulaCase> cases = [] {
             vector<FormulaCase> selected;
             for (const FormulaCase& test_case : all_weight_search_cases()) {
-                if (test_case.name.rfind("2sat-", 0) == 0) {
+                if (test_case.name.rfind("2sat-", 0) == 0) {//starts with 2sat
                     selected.push_back(test_case);
                 }
             }
@@ -407,7 +407,7 @@ namespace formula_suites {
         static const vector<FormulaCase> cases = [] {
             vector<FormulaCase> selected;
             for (const FormulaCase& test_case : all_weight_search_cases()) {
-                if (test_case.name.rfind("2sat-", 0) != 0) {
+                if (test_case.name.rfind("2sat-", 0) != 0) {//does not start with 2sat, either >0 or -1 (string::npos)
                     selected.push_back(test_case);
                 }
             }
