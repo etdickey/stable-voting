@@ -467,19 +467,20 @@ def render_clause_graph(
 
 
 if __name__ == "__main__":
+    img_prefix = "img/"
     # Single SAT example
-    _, _ = render_clause_graph("(x1, x2),(x1,~x2),(~x1,x2),(~x1,~x2)", save_path="basic_2sat_UNSAT_qbf")
+    _, _ = render_clause_graph("(x1, x2),(x1,~x2),(~x1,x2),(~x1,~x2)", save_path=f"{img_prefix}basic_2sat_UNSAT_qbf")
     # UNSAT example:
     formula = ["(x1,x2,x3)","(~x1,x2,x3)","(x1,~x2,x3)","(x1,x2,~x3)","(~x1,~x2,x3)","(~x1,x2,~x3)","(x1,~x2,~x3)","(~x1,~x2,~x3)",]
-    _, _ = render_clause_graph(formula, save_path="basic_3sat_UNSAT_qbf")
+    _, _ = render_clause_graph(formula, save_path=f"{img_prefix}basic_3sat_UNSAT_qbf")
     # qbf example
     formula = ["(~x3,x2)", "(x3,~x2)", "(x1,x4)", "(x1,~x4)", "(x1,x2)", "(x1,~x2)"]
-    render_clause_graph(formula, save_path="2sat_qbf_tournament")
+    render_clause_graph(formula, save_path=f"{img_prefix}2sat_qbf_tournament")
 
     removed_nodes = ["X1", "L2"]
     removed_suffix = "_".join(removed_nodes)
     render_clause_graph(
         formula,
-        save_path=f"2sat_qbf_tournament_minus_{removed_suffix}",
+        save_path=f"{img_prefix}2sat_qbf_tournament_minus_{removed_suffix}",
         removed_nodes=removed_nodes,
     )
