@@ -1,0 +1,2 @@
+candidates,tournaments,cpp_ssv_ms,pref_ssv_ms,cpp_sv_ms,pref_sv_ms,cpp_ssv_mean_ms,pref_ssv_mean_ms,cpp_sv_mean_ms,pref_sv_mean_ms,cpp_ssv_max_ms,pref_ssv_max_ms,cpp_sv_max_ms,pref_sv_max_ms,ssv_speedup,sv_speedup,ssv_mean_speedup,sv_mean_speedup
+30,5,214006.5902,,202057.514,,236495.63191999999,,232079.52438000002,,345127.66099999996,,339569.6386,,,,,

@@ -59,3 +59,23 @@ source_run,candidate_range,timed_calls_per_tournament,pref_voting_benchmarked,ph
 28-29,28-29,3,no,plot output,0.33336329998564906,
 28-29,28-29,3,no,other benchmark overhead,0.005988500008243136,"temporary-directory handling, printing, and other small unmeasured work"
 28-29,28-29,3,no,total benchmark through primary outputs,4901.315629100005,excludes only writing this timing report and final status lines
+30,30,3,no,script initialization and imports,1.7268890000123065,
+30,30,3,no,argument parsing and environment checks,0.04353249998530373,
+30,30,3,no,tournament generation,0.0010906000097747892,
+30,30,3,no,C++ SSV compilation,3.2708698000060394,
+30,30,3,no,C++ SV compilation,3.334545599995181,
+30,30,3,no,C++ SSV input serialization,0.0007232000061776489,
+30,30,3,no,C++ SSV benchmark subprocess,4728.808600700024,"includes helper input parsing, warm-ups, repeats, and process overhead"
+30,30,3,no,C++ SSV output parsing,0.0006321999826468527,
+30,30,3,no,C++ SV input serialization,0.0018971000099554658,
+30,30,3,no,C++ SV benchmark subprocess,4635.305276900006,"includes helper input parsing, warm-ups, repeats, and process overhead"
+30,30,3,no,C++ SV output parsing,4.460001946426928e-05,
+30,30,3,no,pref_voting MarginGraph construction,0,
+30,30,3,no,pref_voting SSV benchmark calls,0,"includes one warm-up, garbage collection, and all timed repeats"
+30,30,3,no,pref_voting SV benchmark calls,0,"includes one warm-up, garbage collection, and all timed repeats"
+30,30,3,no,pref_voting loop/progress overhead,2.4899985874071717e-05,
+30,30,3,no,winner validation and aggregation,0.0009448000055272132,
+30,30,3,no,summary and raw CSV output,0.0023999999975785613,
+30,30,3,no,plot output,7.097804899996845,
+30,30,3,no,other benchmark overhead,0.006513499974971637,"temporary-directory handling, printing, and other small unmeasured work"
+30,30,3,no,total benchmark through primary outputs,9379.601790300017,excludes only writing this timing report and final status lines
