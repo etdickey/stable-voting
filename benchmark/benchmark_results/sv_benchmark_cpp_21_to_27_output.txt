@@ -1,0 +1,135 @@
+python benchmark_pref_voting.py --min-candidates 21 --max-candidates 27 --cpp-only-above 20 --output benchmark_results/sv_benchmark_cpp_21_to_27
+Platform: Windows-11-10.0.26200-SP0
+Python: 3.13.7; compiler: g++ (x86_64-posix-seh-rev1, Built by MinGW-Builds project) 16.1.0
+
+Parameters:
+  pref_voting 1.16.28; seed=20260714; candidates=21..27; 5 tournaments/size; 3 timed calls/tournament
+  pref_voting algorithms: SSV=basic, SV=with_condorcet_check_and_early_termination
+  pref_voting through N=20; C++ only above that (winner agreement is checked only where both run)
+
+  (each tournament is represented by the median of its 3 repeats;
+   for each size we report both the median and arithmetic mean across the 5 tournaments)
+
+  Warm-ups, all repeats, compilation, graph construction, and harness overhead are reported separately below.
+
+benchmarked C++ SSV 1/35: N=21, wall=0.952s (median=236.428ms)
+benchmarked C++ SSV 2/35: N=21, wall=0.810s (median=200.117ms)
+benchmarked C++ SSV 3/35: N=21, wall=0.750s (median=188.471ms)
+benchmarked C++ SSV 4/35: N=21, wall=1.101s (median=275.752ms)
+benchmarked C++ SSV 5/35: N=21, wall=0.365s (median=90.538ms)
+benchmarked C++ SSV 6/35: N=22, wall=2.462s (median=613.862ms)
+benchmarked C++ SSV 7/35: N=22, wall=2.861s (median=714.315ms)
+benchmarked C++ SSV 8/35: N=22, wall=1.064s (median=263.850ms)
+benchmarked C++ SSV 9/35: N=22, wall=2.487s (median=620.392ms)
+benchmarked C++ SSV 10/35: N=22, wall=1.689s (median=413.323ms)
+benchmarked C++ SSV 11/35: N=23, wall=3.059s (median=776.246ms)
+benchmarked C++ SSV 12/35: N=23, wall=4.799s (median=1197.884ms)
+benchmarked C++ SSV 13/35: N=23, wall=0.943s (median=236.619ms)
+benchmarked C++ SSV 14/35: N=23, wall=6.173s (median=1515.787ms)
+benchmarked C++ SSV 15/35: N=23, wall=4.716s (median=1184.813ms)
+benchmarked C++ SSV 16/35: N=24, wall=12.351s (median=3097.740ms)
+benchmarked C++ SSV 17/35: N=24, wall=1.210s (median=299.590ms)
+benchmarked C++ SSV 18/35: N=24, wall=7.140s (median=1782.663ms)
+benchmarked C++ SSV 19/35: N=24, wall=7.745s (median=1912.938ms)
+benchmarked C++ SSV 20/35: N=24, wall=9.824s (median=2431.782ms)
+benchmarked C++ SSV 21/35: N=25, wall=7.376s (median=1844.319ms)
+benchmarked C++ SSV 22/35: N=25, wall=16.106s (median=4030.695ms)
+benchmarked C++ SSV 23/35: N=25, wall=6.851s (median=1694.984ms)
+benchmarked C++ SSV 24/35: N=25, wall=20.678s (median=5179.324ms)
+benchmarked C++ SSV 25/35: N=25, wall=17.462s (median=4420.220ms)
+benchmarked C++ SSV 26/35: N=26, wall=69.455s (median=17274.725ms)
+benchmarked C++ SSV 27/35: N=26, wall=59.122s (median=14792.578ms)
+benchmarked C++ SSV 28/35: N=26, wall=58.251s (median=14332.153ms)
+benchmarked C++ SSV 29/35: N=26, wall=10.718s (median=2672.995ms)
+benchmarked C++ SSV 30/35: N=26, wall=47.994s (median=12065.532ms)
+benchmarked C++ SSV 31/35: N=27, wall=43.214s (median=10867.198ms)
+benchmarked C++ SSV 32/35: N=27, wall=93.371s (median=23126.473ms)
+benchmarked C++ SSV 33/35: N=27, wall=33.481s (median=8348.991ms)
+benchmarked C++ SSV 34/35: N=27, wall=134.619s (median=34096.982ms)
+benchmarked C++ SSV 35/35: N=27, wall=45.826s (median=11533.491ms)
+benchmarked C++ SV 1/35: N=21, wall=1.007s (median=250.542ms)
+benchmarked C++ SV 2/35: N=21, wall=0.872s (median=217.769ms)
+benchmarked C++ SV 3/35: N=21, wall=0.847s (median=202.938ms)
+benchmarked C++ SV 4/35: N=21, wall=1.214s (median=304.355ms)
+benchmarked C++ SV 5/35: N=21, wall=0.382s (median=95.132ms)
+benchmarked C++ SV 6/35: N=22, wall=2.738s (median=694.736ms)
+benchmarked C++ SV 7/35: N=22, wall=3.324s (median=792.202ms)
+benchmarked C++ SV 8/35: N=22, wall=1.169s (median=292.842ms)
+benchmarked C++ SV 9/35: N=22, wall=2.704s (median=677.763ms)
+benchmarked C++ SV 10/35: N=22, wall=1.882s (median=479.016ms)
+benchmarked C++ SV 11/35: N=23, wall=3.109s (median=763.896ms)
+benchmarked C++ SV 12/35: N=23, wall=5.316s (median=1280.510ms)
+benchmarked C++ SV 13/35: N=23, wall=1.014s (median=247.397ms)
+benchmarked C++ SV 14/35: N=23, wall=6.331s (median=1559.390ms)
+benchmarked C++ SV 15/35: N=23, wall=5.240s (median=1326.733ms)
+benchmarked C++ SV 16/35: N=24, wall=13.711s (median=3439.311ms)
+benchmarked C++ SV 17/35: N=24, wall=1.312s (median=323.986ms)
+benchmarked C++ SV 18/35: N=24, wall=7.750s (median=1935.986ms)
+benchmarked C++ SV 19/35: N=24, wall=8.889s (median=2219.932ms)
+benchmarked C++ SV 20/35: N=24, wall=10.642s (median=2644.390ms)
+benchmarked C++ SV 21/35: N=25, wall=8.269s (median=2034.104ms)
+benchmarked C++ SV 22/35: N=25, wall=18.603s (median=4666.246ms)
+benchmarked C++ SV 23/35: N=25, wall=7.788s (median=1945.283ms)
+benchmarked C++ SV 24/35: N=25, wall=23.408s (median=5867.167ms)
+benchmarked C++ SV 25/35: N=25, wall=18.646s (median=4639.125ms)
+benchmarked C++ SV 26/35: N=26, wall=74.731s (median=18716.353ms)
+benchmarked C++ SV 27/35: N=26, wall=65.384s (median=15888.122ms)
+benchmarked C++ SV 28/35: N=26, wall=65.265s (median=16138.840ms)
+benchmarked C++ SV 29/35: N=26, wall=12.259s (median=3110.890ms)
+benchmarked C++ SV 30/35: N=26, wall=55.450s (median=13515.620ms)
+benchmarked C++ SV 31/35: N=27, wall=48.522s (median=11714.509ms)
+benchmarked C++ SV 32/35: N=27, wall=103.998s (median=25816.412ms)
+benchmarked C++ SV 33/35: N=27, wall=37.026s (median=9269.516ms)
+benchmarked C++ SV 34/35: N=27, wall=146.719s (median=35974.760ms)
+benchmarked C++ SV 35/35: N=27, wall=50.665s (median=12534.248ms)
+
+Median of per-tournament medians:
+  N | cases |  C++ SSV ms | pref SSV ms |   SSV x |  C++ SV ms | pref SV ms |    SV x
+----+-------+-------------+-------------+---------+------------+------------+--------
+ 21 |     5 |     200.117 |          -- |      -- |    217.769 |         -- |      --
+ 22 |     5 |     613.862 |          -- |      -- |    677.763 |         -- |      --
+ 23 |     5 |     1184.81 |          -- |      -- |    1280.51 |         -- |      --
+ 24 |     5 |     1912.94 |          -- |      -- |    2219.93 |         -- |      --
+ 25 |     5 |      4030.7 |          -- |      -- |    4639.13 |         -- |      --
+ 26 |     5 |     14332.2 |          -- |      -- |    15888.1 |         -- |      --
+ 27 |     5 |     11533.5 |          -- |      -- |    12534.2 |         -- |      --
+
+Arithmetic mean of per-tournament medians:
+  N | cases |  C++ SSV ms | pref SSV ms |   SSV x |  C++ SV ms | pref SV ms |    SV x
+----+-------+-------------+-------------+---------+------------+------------+--------
+ 21 |     5 |     198.261 |          -- |      -- |    214.147 |         -- |      --
+ 22 |     5 |     525.148 |          -- |      -- |    587.312 |         -- |      --
+ 23 |     5 |      982.27 |          -- |      -- |    1035.59 |         -- |      --
+ 24 |     5 |     1904.94 |          -- |      -- |    2112.72 |         -- |      --
+ 25 |     5 |     3433.91 |          -- |      -- |    3830.38 |         -- |      --
+ 26 |     5 |     12227.6 |          -- |      -- |      13474 |         -- |      --
+ 27 |     5 |     17594.6 |          -- |      -- |    19061.9 |         -- |      --
+
+Wall-clock accounting (warm-ups and all repeats included):
+  script initialization and imports                  1.894s
+  argument parsing and environment checks            0.051s
+  tournament generation                              0.006s
+  C++ SSV compilation                                3.575s
+  C++ SV compilation                                 3.561s
+  C++ SSV input serialization                        0.003s
+  C++ SSV benchmark subprocess                     737.116s
+  C++ SSV output parsing                             0.000s
+  C++ SV input serialization                         0.003s
+  C++ SV benchmark subprocess                      816.277s
+  C++ SV output parsing                              0.000s
+  pref_voting MarginGraph construction               0.000s
+  pref_voting SSV benchmark calls                    0.000s
+  pref_voting SV benchmark calls                     0.000s
+  pref_voting loop/progress overhead                 0.000s
+  winner validation and aggregation                  0.001s
+  summary and raw CSV output                         0.002s
+  plot output                                        0.295s
+  other benchmark overhead                           0.005s
+  ----------------------------------------------------------
+  total benchmark through primary outputs         1562.788s
+
+Summary CSV: benchmark_results\sv_benchmark_cpp_21_to_27.csv
+Raw CSV:     benchmark_results\sv_benchmark_cpp_21_to_27_raw.csv
+Timing CSV:  benchmark_results\sv_benchmark_cpp_21_to_27_timing.csv
+Plot:        benchmark_results\sv_benchmark_cpp_21_to_27.png
+Final script wall time: 1562.790s
