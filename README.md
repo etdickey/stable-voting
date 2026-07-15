@@ -5,15 +5,15 @@ This repository contains a C++20 implementation of **Stable Voting (SV)** and **
 ## Repository layout
 
 ```text
-search_weight_orders.cpp          searches permutations of the 12 weight groups
-test_qbf_reduction.cpp            fixed-weight reduction tests and diagnostics
-include/                          shared C++ headers
-tools/benchmark_pref_voting.py    comparison with the published pref_voting code
-tools/benchmark_cpp.cpp           helper compiled automatically by the benchmark
-tools/stablevoting_customvisualization.py
-examples/run_tournament.cpp       small non-QBF example
-extras/diagnostics/               occasional diagnostic programs
-extras/legacy/                    earlier Python prototype
+search_weight_orders.cpp                   searches permutations of the 12 weight groups
+test_qbf_reduction.cpp                     fixed-weight reduction tests and diagnostics
+include/                                   shared C++ headers
+benchmark/benchmark_pref_voting.py         comparison with the published pref_voting code
+benchmark/benchmark_cpp.cpp                helper compiled automatically by the benchmark
+tools/stablevoting_customvisualization.py  visual plotter for the gadget
+examples/run_tournament.cpp                small non-QBF example
+extras/diagnostics/                        occasional diagnostic programs
+extras/legacy/                             earlier Python prototype
 ```
 
 The two primary C++ programs remain in the repository root. Files under `extras/` are not needed for the main experiments.
@@ -144,7 +144,7 @@ A reference run used deterministic uniquely weighted tournaments with 4–20 can
 | SSV | 47.6 ms / 5.34 s | 112× | 73.2 ms / 9.04 s | 123× |
 | SV | 52.8 ms / 2.68 s | 50.7× | 82.4 ms / 7.00 s | 84.9× |
 
-The run used Windows 11, Python 3.13.7, `pref_voting` 1.16.28, and MinGW `g++` 16.1.0. Including warm-ups and all repetitions, it took 1,666.7 seconds (27.8 minutes). Runtime varied substantially across tournaments: at 20 candidates, the largest `pref_voting` tournament-level medians were 18.7 seconds for SSV and 14.1 seconds for SV. These results are machine-, version-, and instance-specific and should be interpreted as a reproducible implementation comparison on this fixed sample, not as an estimate of average-case complexity.
+The run used Windows 11, Python 3.13.7, `pref_voting` 1.16.28, and MinGW `g++` 16.1.0. Including warm-ups and all repetitions, it took 1,666.7 seconds (27.8 minutes). Runtime varied substantially across tournaments: at 20 candidates, the largest `pref_voting` tournament-level medians were 18.7 seconds for SSV and 14.1 seconds for SV. These results are machine-, version-, and instance-specific and should be interpreted as a reproducible implementation comparison on this fixed sample, not as an estimate of average-case complexity. More information can be found in `benchmark/benchmark_results`
 
 ## Candidate limit
 
