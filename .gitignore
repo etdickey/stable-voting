@@ -2,6 +2,7 @@ __pycache__/
 .vscode/*
 Records/tmp*
 records*
+Records*
 
 *.exe
 *.out
