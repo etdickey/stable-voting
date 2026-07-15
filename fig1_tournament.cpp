@@ -1,5 +1,5 @@
 /**
- * @file figure1_tournament.cpp
+ * @file fig1_tournament.cpp
  * @brief Reproduces the 15-candidate tournament of Figure 1 / Table 1 from
  *        "Stable Voting is PSPACE-Complete".
  *
@@ -18,12 +18,11 @@
  * winner, c6, which is why the caption of Table 1 states the convention.)
  *
  * Expected output:
- *      SSV winner: c5   -- and c5 beats only 1 of the other 14 candidates,
- *      SV  winner: c5      while c1 beats 10 and c6 beats 13.
+ *       c5 wins, under both SSV and the SV build.
  *
  * Build (SSV is the default; -DSV_CHECK_DEFEATS=1 selects SV):
- *   g++ -std=c++20 -O3 -DNDEBUG -Iinclude examples/figure1_tournament.cpp -o figure1_ssv
- *   g++ -std=c++20 -O3 -DNDEBUG -Iinclude -DSV_CHECK_DEFEATS=1 examples/figure1_tournament.cpp -o figure1_sv
+ *   g++ -std=c++20 -O3 -DNDEBUG -Iinclude fig1_tournament.cpp -o figure1_ssv
+ *   g++ -std=c++20 -O3 -DNDEBUG -Iinclude -DSV_CHECK_DEFEATS=1 fig1_tournament.cpp -o figure1_sv
  */
 
 #include <bits/stdc++.h>
