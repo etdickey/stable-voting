@@ -20,10 +20,11 @@ search_weight_orders.cpp                   searches permutations of the 12 weigh
 test_qbf_reduction.cpp                     fixed-weight reduction tests and diagnostics
 benchmark/benchmark_pref_voting.py         comparison with the published pref_voting code
 benchmark/benchmark_cpp.cpp                helper compiled automatically by the benchmark
-examples/run_tournament.cpp                small non-QBF example
 extras/diagnostics/                        occasional diagnostic programs
 extras/legacy/                             earlier Python prototype
 include/                                   shared C++ headers
+tests/test_formula_values.cpp              validator for QBF formulas
+tools/examples/run_tournament.cpp          small non-QBF example
 tools/stablevoting_customvisualization.py  visual plotter for the gadget
 ```
 

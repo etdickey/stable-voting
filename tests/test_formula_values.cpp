@@ -2,11 +2,8 @@
 // g++ -std=c++20 -O3 -march=native -flto -DNDEBUG test_formula_values.cpp -o formula_validator && formula_validator
 
 #include <bits/stdc++.h> //includes basically everything you could need, including iomanip
-// #include <cstdint>
 #include <iostream>
-// #include <string>
 #include <utility>
-// #include <vector>
 
 using namespace std;
 
