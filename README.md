@@ -156,15 +156,22 @@ A reference run used deterministic uniquely weighted tournaments with 4–20 can
 | SSV | 47.6 ms / 5.34 s | 112× | 73.2 ms / 9.04 s | 123× |
 | SV | 52.8 ms / 2.68 s | 50.7× | 82.4 ms / 7.00 s | 84.9× |
 
-The run used Windows 11, Python 3.13.7, `pref_voting` 1.16.28, and MinGW `g++` 16.1.0. Including warm-ups and all repetitions, it took 1,666.7 seconds (27.8 minutes). Runtime varied substantially across tournaments: at 20 candidates, the largest `pref_voting` tournament-level medians were 18.7 seconds for SSV and 14.1 seconds for SV. These results are machine-, version-, and instance-specific and should be interpreted as a reproducible implementation comparison on this fixed sample, not as an estimate of average-case complexity. More information can be found in `benchmark/benchmark_results`
+The run used Windows 11, Python 3.13.7, `pref_voting` 1.16.28, and MinGW `g++` 16.1.0. Including warm-ups and all repetitions, it took 1,666.7 seconds (27.8 minutes). Runtime varied substantially across tournaments: at 20 candidates, the largest `pref_voting` tournament-level medians were 18.7 seconds for SSV and 14.1 seconds for SV. These results are machine-, version-, and instance-specific and should be interpreted as a reproducible implementation comparison on this fixed sample, not as an estimate of average-case complexity. Full results, including the C++-only extension through 29 candidates, are in `benchmark/benchmark_results/`.
 
 ## Candidate limit
 
-Candidate sets are represented by a `uint64_t` mask, and memo entries are indexed directly by that mask. On the intended 64-bit builds, the current solver therefore requires **fewer than 64 candidates** (`N <= 63`). This is a representational ceiling, not a practical one: a dense table for 63 candidates cannot be allocated. For reduction instances, the corresponding representational condition is `2 + 3n + m <= 63`.
+Candidate sets are represented by a `uint64_t` mask, so the current solver requires **at most 63 candidates** (`N <= 63`). For reduction instances, the corresponding condition is `2 + 3n + m <= 63`. This is only the representational ceiling. The standard solver uses dense winner and epoch arrays indexed by every subset, for approximately `8 * 2^N` bytes before graph and process overhead; each additional candidate therefore doubles both this memory and the potential subset state space.
 
-The practical limit is much lower because the standard memo uses dense `O(2^N)` arrays. The winner and epoch arrays alone use about `8 * 2^N` bytes: approximately 128 MiB at 24 candidates, 256 MiB at 25, and 512 MiB at 26, before the remaining graph and process memory. Running time is exponential as well, although individual tournaments may terminate much sooner.
+To measure the practical limit, we extended the deterministic benchmark with C++ only through 29 candidates, using five random tournaments per candidate count and three timed calls per tournament. Each tournament is represented by the median of its three calls, and the values below are the medians across the five tournament-level medians.
 
-Increasing the hard 63-candidate limit is conceptually possible with a multiword bitset, but retaining the current speed would require more than changing the integer type. The dense mask-indexed memo would need to become sparse or structurally compressed, which introduces hashing and allocation costs and does not remove the exponential worst case. Supporting substantially larger tournaments while remaining fast would therefore be a significant solver redesign rather than a small compatibility edit.
+| Candidates | Approx. memo memory | SSV | SV |
+|---:|---:|---:|---:|
+| 28 | 2 GiB | 36.8 s | 39.0 s |
+| 29 | 4 GiB | 74.3 s | 76.4 s |
+
+All five 29-candidate tournaments completed, but the slowest tournament-level medians were 152 seconds for SSV and 170 seconds for SV. On this machine and sample, **28–29 candidates is therefore a reasonable practical upper range** for the current dense-memo implementation. This is not a hard cutoff: runtime varies substantially by tournament, and 30 candidates would require about 8 GiB for the two memo arrays alone.
+
+Increasing the 63-candidate mask limit with a multiword bitset would be straightforward, but would not address the exponential memory requirement. Supporting substantially larger tournaments while retaining high speed would require a sparse or structurally compressed memo and would be a significant solver redesign.
 
 ## Visualization
 
