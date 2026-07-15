@@ -122,6 +122,12 @@ int main() {
         cout << i << '\t' << G.N << '\t' << winner << '\t'
              << median_seconds << '\t' << warmup_seconds << '\t'
              << timed_total_seconds << '\t' << wall_seconds << '\n';
+
+        cerr << "benchmarked C++ " << (SV_CHECK_DEFEATS ? "SV" : "SSV")
+          << " " << i + 1 << "/" << tournament_count
+          << ": N=" << G.N
+          << ", wall=" << fixed << setprecision(3) << wall_seconds << "s"
+          << " (median=" << median_seconds * 1000.0 << "ms)\n";
     }
 
     return 0;
