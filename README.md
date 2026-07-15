@@ -147,7 +147,7 @@ Candidate range, number of tournaments, repetitions, random seed, compiler, and 
 
 ### Reference benchmark result
 
-A reference run used deterministic uniquely weighted tournaments with 4–20 candidates, five tournaments per candidate count, and nine timed calls per tournament. Each tournament was represented by the median of its nine calls; the table reports the median and arithmetic mean across the five tournament-level medians. The C++ and `pref_voting` implementations agreed on every SV and SSV winner.
+A reference run used deterministic uniquely weighted tournaments with 4-20 candidates, five tournaments per candidate count, and nine timed calls per tournament. Each tournament was represented by the median of its nine calls; the table reports the median and arithmetic mean across the five tournament-level medians. The C++ and `pref_voting` implementations agreed on every SV and SSV winner.
 
 **Results at 20 candidates**
 
@@ -170,7 +170,7 @@ To measure the practical limit, we extended the deterministic benchmark with C++
 | 29 | 4 GiB | 74.3 s (80.8 s) | 76.4 s (87.3 s) |
 | 30 | 8 GiB | 214.0 s (236.5 s) | 202.1 s (232.1 s) |
 
-All five 30-candidate tournaments completed. The slowest tournament-level medians were 345 seconds for SSV and 340 seconds for SV, and the full 30-candidate run--including warm-ups and all repetitions in both modes--took 9,379.6 seconds (2.61 hours). Thus, **30 candidates is a demonstrated upper edge on the benchmark machine, while 28–29 candidates is a more comfortable range for routine runs**. A 31-candidate run would require about 16 GiB for the two memo arrays alone, before graph and process overhead.
+All five 30-candidate tournaments completed. The slowest tournament-level medians were 345 seconds for SSV and 340 seconds for SV, and the full 30-candidate run--including warm-ups and all repetitions in both modes--took 9,379.6 seconds (2.61 hours). Thus, **30 candidates is a demonstrated upper edge on the benchmark machine, while 28-29 candidates is a more comfortable range for routine runs**. A 31-candidate run would require about 16 GiB for the two memo arrays alone, before graph and process overhead.
 
 Increasing the 63-candidate mask limit with a multiword bitset would be straightforward, but would not address the exponential memory requirement. Supporting substantially larger tournaments while retaining high speed would require a sparse or structurally compressed memo and would be a significant solver redesign.
 
