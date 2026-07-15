@@ -18,13 +18,13 @@ This repository contains a C++20 implementation of **Stable Voting (SV)** and **
 ```text
 search_weight_orders.cpp                   searches permutations of the 12 weight groups
 test_qbf_reduction.cpp                     fixed-weight reduction tests and diagnostics
-include/                                   shared C++ headers
 benchmark/benchmark_pref_voting.py         comparison with the published pref_voting code
 benchmark/benchmark_cpp.cpp                helper compiled automatically by the benchmark
-tools/stablevoting_customvisualization.py  visual plotter for the gadget
 examples/run_tournament.cpp                small non-QBF example
 extras/diagnostics/                        occasional diagnostic programs
 extras/legacy/                             earlier Python prototype
+include/                                   shared C++ headers
+tools/stablevoting_customvisualization.py  visual plotter for the gadget
 ```
 
 The two primary C++ programs remain in the repository root. Files under `extras/` are not needed for the main experiments.
