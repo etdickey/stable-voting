@@ -28,9 +28,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#include "include/fast_utils.hpp"
-#include "include/graph_template.hpp"
-#include "include/sv_fast.hpp"
+#include "../../include/fast_utils.hpp"
+#include "../../include/graph_template.hpp"
+#include "../../include/sv_fast.hpp"
 
 // ===================== Table 1 of the paper, verbatim =======================
 
