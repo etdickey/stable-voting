@@ -21,6 +21,13 @@
  * Fast build and run:
  *   g++ -std=c++20 -O3 -march=native -flto -DNDEBUG -Iinclude search_weight_orders.cpp -o search_weight_orders && search_weight_orders
  *     (-O3 includes -fomit-frame-pointer)
+ *
+ *
+ * Future todos:
+ * 1. Take input as to which section of permutations to run and run X of them
+ * 1a. or figure out multithreading
+ * 2. Add counts of how many times each formula has been satisfied
+ * 2a. also counts of how many times each person won each formula
  */
 
 #include <bits/stdc++.h> //includes basically everything you could need, including iomanip
