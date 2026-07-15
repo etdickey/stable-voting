@@ -2,6 +2,17 @@
 
 This repository contains a C++20 implementation of **Stable Voting (SV)** and **Simple Stable Voting (SSV)**, together with the tournament construction used in our reduction from quantified Boolean formulas. The solver can also be used directly on any complete weighted tournament; the QBF construction is only one application.
 
+## Table of Contents
+
+* [Repository layout](#repository-layout)
+* [Build and run](#build-and-run)
+* [QBF input convention](#qbf-input-convention)
+* [Running an arbitrary tournament](#running-an-arbitrary-tournament)
+* [Benchmark against `pref_voting`](#benchmark-against-pref_voting)
+  * [Reference benchmark result](#reference-benchmark-result)
+* [Candidate limit](#candidate-limit)
+* [Visualization](#visualization)
+
 ## Repository layout
 
 ```text
